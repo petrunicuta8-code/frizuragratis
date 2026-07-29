@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin – BarberElite</title>
+  <link rel="stylesheet" href="css/style.css"/>
+  <style>
+    /* ===== ADMIN LOGIN ===== */
+    .admin-login-page {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #0a0a0a, #1a1209);
+    }
+
+    /* ===== ADMIN PANEL ===== */
+    .admin-panel { display: none; }
+
+    .admin-topbar {
+      background: var(--dark2);
+      border-bottom: 2px solid var(--gold);
+      padding: 0 40px;
+      height: 65px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .admin-topbar-logo {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: var(--white);
+    }
+
+    .admin-topbar-logo span { color: var(--gold); }
+    .admin-badge {
+      background: rgba(201,168,76,0.15);
+      border: 1px solid var(--gold);
+      color: var(--gold);
+      padding: 4px 12px;
+      border-radius: 50px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      letter-spacing: 1px;
+    }
+
+    .admin-body {
+      display: grid;
+      grid-template-columns: 220px 1fr;
+      min-height: calc(100vh - 65px);
+    }
+
+    /* sidebar */
+    .admin-sidebar {
+      background: var(--dark2);
+      border-right: 1px solid #2a2a2a;
+      padding: 25px 0;
+    }
+
+    .sidebar-menu { list-style: none; }
+
+    .sidebar-menu li a {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 13px 25px;
+      color: var(--text-muted);
+      font-size: 0.92rem;
+      transition: all 0.2s;
+      border-left: 3px solid transparent;
+    }
+
+    .sidebar-menu li a:hover,
+    .sidebar-menu li a.active {
+      color: var(--gold);
+      background: rgba(201,168,76,0.07);
+      border-left-color: var(--gold);
+    }
+
+    .sidebar-menu li a .icon { font-size: 1.1rem; width: 22px; text-align: center; }
+
+    /* main content */
+    .admin-main { padding: 35px 40px; overflow-y: auto; }
+
+    .admin-page { display: none; }
+    .admin-page.active { display: block; }
+
+    /* stat cards */
+    .stat-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 20px;
+      margin-bottom: 35px;
+    }
+
+    .stat-card {
+      background: var(--dark2);
+      border: 1px solid #2a2a2a;
+      border-radius: var(--radius);
+      padding: 25px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .stat-card::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--gold), var(--gold-light));
+    }
+
+    .stat-card .sc-icon { font-size: 2rem; margin-bottom: 10px; }
+    .stat-card .sc-num  { font-size: 2.2rem; font-weight: 800; color: var(--gold); }
+    .stat-card .sc-label { color: var(--text-muted); font-size: 0.85rem; margin-top: 4px; }
+
+    /* tables */
+    .admin-table-wrap {
+      background: var(--dark2);
+      border: 1px solid #2a2a2a;
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+
+    .admin-table-header {
+      padding: 18px 25px;
+      border-bottom: 1px solid #2a2a2a;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .admin-table-header h3 { color: var(--white); font-size: 1rem; }
+
+    .search-box {
+      background: var(--dark3);
+      border: 1px solid #333;
+      border-radius: var(--radius);
+      padding: 7px 14px;
+      color: var(--text);
+      font-size: 0.85rem;
+      outline: none;
+      width: 200px;
+      transition: border-color 0.3s;
+    }
+
+    .search-box:focus { border-color: var(--gold); }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    thead tr { background: rgba(201,168,76,0.07); }
+    thead th {
+      padding: 12px 20px;
+      text-align: left;
+      color: var(--gold);
+      font-size: 0.82rem;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+
+    tbody tr {
+      border-top: 1px solid #1e1e1e;
+      transition: background 0.2s;
+    }
+
+    tbody tr:hover { background: rgba(255,255,255,0.03); }
+
+    tbody td {
+      padding: 13px 20px;
+      color: var(--text);
+      font-size: 0.88rem;
+      vertical-align: middle;
+    }
+
+    .td-muted { color: var(--text-muted); }
+
+    .badge {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 50px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .badge-new     { background: rgba(92,184,92,0.15);  color: #5cb85c; border: 1px solid #5cb85c; }
+    .badge-citit   { background: rgba(153,153,153,0.1); color: #999;    border: 1px solid #555; }
+    .badge-admin   { background: rgba(201,168,76,0.15); color: var(--gold); border: 1px solid var(--gold); }
+    .badge-user    { background: rgba(100,149,237,0.1); color: cornflowerblue; border: 1px solid cornflowerblue; }
+
+    .btn-icon {
+      background: transparent;
+      border: 1px solid #333;
+      border-radius: 6px;
+      padding: 5px 10px;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 0.85rem;
+      transition: all 0.2s;
+    }
+
+    .btn-icon:hover { border-color: var(--danger); color: var(--danger); }
+
+    /* mesaj expandat */
+    .msg-expand {
+      background: var(--dark3);
+      border: 1px solid #2a2a2a;
+      border-radius: var(--radius);
+      padding: 15px;
+      margin-top: 8px;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      line-height: 1.6;
+      display: none;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 50px 20px;
+      color: var(--text-muted);
+    }
+
+    .empty-state .e-icon { font-size: 3rem; margin-bottom: 12px; }
+
+    /* setari */
+    .settings-card {
+      background: var(--dark2);
+      border: 1px solid #2a2a2a;
+      border-radius: var(--radius);
+      padding: 30px;
+      margin-bottom: 20px;
+      max-width: 500px;
+    }
+
+    .settings-card h3 { color: var(--white); margin-bottom: 20px; font-size: 1rem; }
+
+    @media (max-width: 768px) {
+      .admin-body { grid-template-columns: 1fr; }
+      .admin-sidebar {
+        display: none;
+        position: fixed;
+        top: 0; left: 0; bottom: 0;
+        width: 260px;
+        z-index: 500;
+        padding-top: 70px;
+        box-shadow: 4px 0 20px rgba(0,0,0,0.5);
+      }
+      .admin-sidebar.open { display: block; }
+      .admin-main { padding: 20px; }
+      .admin-topbar { padding: 0 16px; }
+      #admin-hamburger { display: flex !important; }
+      .stat-cards { grid-template-columns: repeat(2, 1fr); }
+      .admin-table-wrap { overflow-x: auto; }
+      table { min-width: 500px; }
+      .settings-card { max-width: 100%; }
+    }
+
+    @media (max-width: 400px) {
+      .stat-cards { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ===== LOGIN ADMIN ===== -->
+<div class="admin-login-page" id="admin-login-page">
+  <div class="form-card">
+    <div class="form-card-header">
+      <div class="form-icon">🛡</div>
+      <h2>Panou Admin</h2>
+      <p>Acces restricționat – doar pentru proprietar</p>
+    </div>
+
+    <div class="alert alert-error" id="admin-alert"></div>
+
+    <form id="admin-login-form">
+      <div class="form-group">
+        <label for="admin-user">Utilizator admin</label>
+        <input type="text" id="admin-user" placeholder="admin" required />
+      </div>
+      <div class="form-group">
+        <label for="admin-pass">Parolă admin</label>
+        <input type="password" id="admin-pass" placeholder="••••••" required />
+      </div>
+      <button type="submit" class="btn btn-gold btn-full">Intră în panou</button>
+    </form>
+
+    <div class="form-footer">
+      <a href="index.html">← Înapoi la site</a>
+    </div>
+  </div>
+</div>
+
+<!-- ===== PANOUL ADMIN ===== -->
+<div class="admin-panel" id="admin-panel">
+
+  <!-- Top bar -->
+  <div class="admin-topbar">
+    <div class="admin-topbar-logo">Barber<span>Elite</span> &nbsp;<span class="admin-badge">ADMIN</span></div>
+    <div style="display:flex; gap:12px; align-items:center;">
+      <span style="color:var(--text-muted); font-size:0.85rem;" id="admin-welcome"></span>
+      <button class="btn btn-danger" style="padding:7px 16px; font-size:0.82rem;" onclick="adminLogout()">Deconectare</button>
+      <!-- Hamburger mobil -->
+      <button class="hamburger" id="admin-hamburger" onclick="toggleAdminSidebar()" style="display:none; flex-direction:column; gap:5px; cursor:pointer; padding:8px; background:transparent; border:none;">
+        <span style="display:block;width:26px;height:3px;background:var(--gold);border-radius:3px;"></span>
+        <span style="display:block;width:26px;height:3px;background:var(--gold);border-radius:3px;"></span>
+        <span style="display:block;width:26px;height:3px;background:var(--gold);border-radius:3px;"></span>
+      </button>
+    </div>
+  </div>
+
+  <div class="admin-body">
+
+    <!-- Sidebar -->
+    <aside class="admin-sidebar">
+      <ul class="sidebar-menu">
+        <li><a href="#" class="active" onclick="showPage('dashboard', this)"><span class="icon">📊</span> Dashboard</a></li>
+        <li><a href="#" onclick="showPage('mesaje', this)"><span class="icon">✉</span> Mesaje <span id="mesaje-badge" style="margin-left:auto; background:var(--danger); color:white; padding:2px 7px; border-radius:50px; font-size:0.75rem;"></span></a></li>
+        <li><a href="#" onclick="showPage('utilizatori', this)"><span class="icon">👥</span> Utilizatori</a></li>
+        <li><a href="#" onclick="showPage('setari', this)"><span class="icon">⚙</span> Setări</a></li>
+        <li style="margin-top:auto; padding-top:30px;">
+          <a href="index.html" style="margin-top:20px;"><span class="icon">🌐</span> Vezi site-ul</a>
+        </li>
+      </ul>
+    </aside>
+
+    <!-- Main -->
+    <main class="admin-main">
+
+      <!-- DASHBOARD -->
+      <div class="admin-page active" id="page-dashboard">
+        <h2 style="color:var(--white); margin-bottom:25px;">Bun venit în panou, <span style="color:var(--gold)" id="dash-name"></span> 👋</h2>
+
+        <div class="stat-cards" id="stat-cards">
+          <!-- generate din JS -->
+        </div>
+
+        <div class="admin-table-wrap">
+          <div class="admin-table-header">
+            <h3>📨 Ultimele mesaje</h3>
+            <a href="#" onclick="showPage('mesaje', null)" style="font-size:0.85rem;">Vezi toate →</a>
+          </div>
+          <div id="dash-mesaje-table"></div>
+        </div>
+      </div>
+
+      <!-- MESAJE -->
+      <div class="admin-page" id="page-mesaje">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:25px; flex-wrap:wrap; gap:10px;">
+          <h2 style="color:var(--white);">✉ Mesaje primite</h2>
+          <div style="display:flex; gap:10px;">
+            <button class="btn btn-outline" style="font-size:0.82rem; padding:8px 16px;" onclick="renderMesaje(); updateBadge();">🔄 Reîmprospătează</button>
+            <button class="btn btn-danger" style="font-size:0.82rem; padding:8px 16px;" onclick="stergeToateMesajele()">🗑 Șterge toate</button>
+          </div>
+        </div>
+        <div class="admin-table-wrap">
+          <div class="admin-table-header">
+            <h3>Toate mesajele <span id="msg-count" style="color:var(--text-muted); font-size:0.8rem; font-weight:400;"></span></h3>
+            <input class="search-box" type="text" placeholder="🔍 Caută..." oninput="cautaMesaje(this.value)" />
+          </div>
+          <div id="mesaje-table"></div>
+        </div>
+      </div>
+
+      <!-- UTILIZATORI -->
+      <div class="admin-page" id="page-utilizatori">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:25px;">
+          <h2 style="color:var(--white);">👥 Utilizatori înregistrați</h2>
+          <button class="btn btn-danger" style="font-size:0.82rem; padding:8px 16px;" onclick="stergeToatiUtilizatorii()">🗑 Șterge toți</button>
+        </div>
+        <div class="admin-table-wrap">
+          <div class="admin-table-header">
+            <h3>Conturi create</h3>
+            <input class="search-box" type="text" placeholder="🔍 Caută..." oninput="cautaUtilizatori(this.value)" />
+          </div>
+          <div id="utilizatori-table"></div>
+        </div>
+      </div>
+
+      <!-- SETĂRI -->
+      <div class="admin-page" id="page-setari">
+        <h2 style="color:var(--white); margin-bottom:25px;">⚙ Setări admin</h2>
+
+        <div class="settings-card">
+          <h3>🔑 Schimbă parola admin</h3>
+          <div class="alert alert-error"   id="set-alert-err"></div>
+          <div class="alert alert-success" id="set-alert-ok"></div>
+          <form id="change-pass-form">
+            <div class="form-group">
+              <label>Parola actuală</label>
+              <input type="password" id="set-old-pass" placeholder="••••••" required />
+            </div>
+            <div class="form-group">
+              <label>Parola nouă</label>
+              <input type="password" id="set-new-pass" placeholder="Minim 4 caractere" required minlength="4" />
+            </div>
+            <button type="submit" class="btn btn-gold">Salvează parola</button>
+          </form>
+        </div>
+
+        <div class="settings-card">
+          <h3>📞 Informații contact</h3>
+          <p style="color:var(--text-muted); font-size:0.88rem; line-height:1.7;">
+            Telefon: <strong style="color:var(--white);">0721 000 000</strong><br/>
+            Email: <strong style="color:var(--white);">contact@barberelite.ro</strong>
+          </p>
+        </div>
+
+        <div class="settings-card">
+          <h3>🗑 Resetare date</h3>
+          <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:15px;">
+            Șterge toate datele din localStorage (mesaje + conturi utilizatori).
+          </p>
+          <button class="btn btn-danger" onclick="resetareCompleta()">Resetare completă</button>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<script type="module">
+// ===== CONFIG ADMIN =====
+const ADMIN_KEY   = 'barberelite_admin';
+const MSGS_KEY    = 'barberelite_messages';
+const USERS_KEY   = 'frizerie_users';
+const ADMIN_SESSION_KEY = 'barberelite_admin_session';
+
+let adminCreds = JSON.parse(localStorage.getItem(ADMIN_KEY) || '{"user":"admin","pass":"admin123"}');
+
+// Verifică dacă admin e deja logat
+function checkAdminSession() {
+  return localStorage.getItem(ADMIN_SESSION_KEY) === 'true';
+}
+
+function setAdminSession() {
+  localStorage.setItem(ADMIN_SESSION_KEY, 'true');
+}
+
+function clearAdminSession() {
+  localStorage.removeItem(ADMIN_SESSION_KEY);
+}
+
+// ===== LOGIN =====
+document.getElementById('admin-login-form').addEventListener('submit', function(e) {
+  e.preventDefault();
+  const u = document.getElementById('admin-user').value.trim();
+  const p = document.getElementById('admin-pass').value;
+  const alertEl = document.getElementById('admin-alert');
+  alertEl.classList.remove('show');
+
+  if (u === adminCreds.user && p === adminCreds.pass) {
+    setAdminSession();
+    showAdminPanel(u);
+  } else {
+    alertEl.textContent = 'Utilizator sau parolă incorectă.';
+    alertEl.classList.add('show');
+  }
+});
+
+function showAdminPanel(u) {
+  document.getElementById('admin-login-page').style.display = 'none';
+  document.getElementById('admin-panel').style.display = 'block';
+  document.getElementById('admin-welcome').textContent = '👤 ' + u;
+  document.getElementById('dash-name').textContent = u;
+  startMesajeListen();
+  loadDashboard();
+}
+
+function adminLogout() {
+  clearAdminSession();
+  document.getElementById('admin-login-page').style.display = 'flex';
+  document.getElementById('admin-panel').style.display = 'none';
+  document.getElementById('admin-login-form').reset();
+}
+
+// Expune funcțiile global pentru onclick din HTML
+window.showPage = showPage;
+window.adminLogout = adminLogout;
+window.toggleMesaj = toggleMesaj;
+window.marcheazaCitit = marcheazaCitit;
+window.stergeMesaj = stergeMesaj;
+window.stergeToateMesajele = stergeToateMesajele;
+window.cautaMesaje = cautaMesaje;
+window.renderMesaje = renderMesaje;
+window.stergeUtilizator = stergeUtilizator;
+window.stergeToatiUtilizatorii = stergeToatiUtilizatorii;
+window.cautaUtilizatori = cautaUtilizatori;
+window.updateBadge = updateBadge;
+window.resetareCompleta = resetareCompleta;
+window.toggleAdminSidebar = toggleAdminSidebar;
+
+// Auto-login
+if (checkAdminSession()) {
+  showAdminPanel(adminCreds.user);
+}
+
+// ===== NAVIGARE =====
+function showPage(id, linkEl) {
+  document.querySelectorAll('.admin-page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  if (linkEl) {
+    document.querySelectorAll('.sidebar-menu a').forEach(a => a.classList.remove('active'));
+    linkEl.classList.add('active');
+  }
+  if (id === 'mesaje')      renderMesaje();
+  if (id === 'utilizatori') renderUtilizatori();
+  if (id === 'dashboard')   loadDashboard();
+}
+
+// ===== MESAJE DIN FIRESTORE =====
+import { db, collection, getDocs, doc, updateDoc, deleteDoc, onSnapshot, query, orderBy, serverTimestamp } from './js/firebase-config.js';
+
+let mesajeCache = [];
+
+// Ascultă mesaje în timp real
+function startMesajeListen() {
+  const q = query(collection(db, 'mesaje'), orderBy('data', 'desc'));
+  onSnapshot(q, (snapshot) => {
+    mesajeCache = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+    updateBadge();
+    // Refresh tabel dacă pagina mesaje e activă
+    const pageActive = document.getElementById('page-mesaje');
+    if (pageActive && pageActive.classList.contains('active')) {
+      renderMesaje();
+    }
+    // Refresh dashboard
+    const dashActive = document.getElementById('page-dashboard');
+    if (dashActive && dashActive.classList.contains('active')) {
+      loadDashboard();
+    }
+  });
+}
+
+function getMesaje() { return mesajeCache; }
+
+async function marcheazaCitit(id) {
+  try {
+    await updateDoc(doc(db, 'mesaje', id), { citit: true });
+  } catch(e) { console.error(e); }
+}
+
+async function stergeMesaj(id) {
+  if (!confirm('Ștergi acest mesaj?')) return;
+  try {
+    await deleteDoc(doc(db, 'mesaje', id));
+  } catch(e) { console.error(e); }
+}
+
+async function stergeToateMesajele() {
+  if (!confirm('Ștergi TOATE mesajele?')) return;
+  const snap = await getDocs(collection(db, 'mesaje'));
+  for (const d of snap.docs) await deleteDoc(doc(db, 'mesaje', d.id));
+}
+
+function formatData(ts) {
+  if (!ts) return '—';
+  const d = ts.toDate ? ts.toDate() : new Date(ts);
+  return d.toLocaleDateString('ro-RO', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' });
+}
+
+function renderMesajeTable(msgs, containerId) {
+  const el = document.getElementById(containerId);
+  if (!msgs.length) {
+    el.innerHTML = `<div class="empty-state"><div class="e-icon">📭</div><p>Niciun mesaj primit.</p></div>`;
+    return;
+  }
+  el.innerHTML = `
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Nume</th>
+          <th>Email</th>
+          <th>Subiect</th>
+          <th>Data</th>
+          <th>Status</th>
+          <th>Acțiuni</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${msgs.map((m, i) => `
+          <tr style="cursor:pointer;" onclick="toggleMesaj('expand-${containerId}-${i}', '${m.id}')">
+            <td class="td-muted">${i + 1}</td>
+            <td><strong>${m.nume}</strong></td>
+            <td class="td-muted">${m.email}</td>
+            <td>${m.subiect || '—'}</td>
+            <td class="td-muted">${formatData(m.data)}</td>
+            <td><span class="badge ${m.citit ? 'badge-citit' : 'badge-new'}" id="badge-${containerId}-${i}">${m.citit ? 'Citit' : 'Nou'}</span></td>
+            <td onclick="event.stopPropagation()" style="display:flex; gap:6px; flex-wrap:wrap;">
+              <button class="btn-icon" onclick="toggleMesaj('expand-${containerId}-${i}', '${m.id}')" title="Vezi">👁</button>
+              <button class="btn-icon" onclick="marcheazaCitit('${m.id}')" title="Marchează citit">✔</button>
+              <button class="btn-icon" onclick="stergeMesaj('${m.id}')" title="Șterge">🗑</button>
+            </td>
+          </tr>
+          <tr id="expand-${containerId}-${i}" style="display:none; background:rgba(201,168,76,0.04);">
+            <td colspan="7" style="padding:0 20px 15px 20px;">
+              <div style="background:var(--dark3); border:1px solid #2a2a2a; border-radius:8px; padding:15px 18px; font-size:0.87rem; color:var(--text); line-height:1.8;">
+                <div style="margin-bottom:6px;">📞 <span style="color:var(--text-muted);">Telefon:</span> <strong>${m.telefon || '—'}</strong></div>
+                <div style="margin-bottom:6px;">📧 <span style="color:var(--text-muted);">Email:</span> <strong>${m.email}</strong></div>
+                <div style="margin-bottom:6px;">🗂 <span style="color:var(--text-muted);">Subiect:</span> <strong>${m.subiect || '—'}</strong></div>
+                <div style="border-top:1px solid #2a2a2a; margin-top:10px; padding-top:10px;">
+                  💬 <span style="color:var(--text-muted);">Mesaj:</span><br/>
+                  <span style="color:var(--white); display:block; margin-top:5px; white-space:pre-wrap;">${m.mesaj}</span>
+                </div>
+              </div>
+            </td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
+  `;
+}
+
+function renderMesaje(filtru = '') {
+  let msgs = getMesaje();
+  const countEl = document.getElementById('msg-count');
+  if (countEl) countEl.textContent = `(${msgs.length} total)`;
+  if (filtru) msgs = msgs.filter(m =>
+    m.nume.toLowerCase().includes(filtru) ||
+    m.email.toLowerCase().includes(filtru) ||
+    (m.mesaj || '').toLowerCase().includes(filtru)
+  );
+  renderMesajeTable(msgs, 'mesaje-table');
+}
+
+function cautaMesaje(val) { renderMesaje(val.toLowerCase()); }
+
+function toggleMesaj(expandId, msgId) {
+  const row = document.getElementById(expandId);
+  if (!row) return;
+  const isOpen = row.style.display === 'table-row';
+  row.style.display = isOpen ? 'none' : 'table-row';
+  if (!isOpen && msgId) marcheazaCitit(msgId);
+}
+
+function marcheazaCitit(id) {
+  const msgs = getMesaje();
+  const m = msgs.find(m => m.id === id);
+  if (m) { m.citit = true; saveMesaje(msgs); renderMesaje(); updateBadge(); }
+}
+
+function stergeMesaj(id) {
+  if (!confirm('Ștergi acest mesaj?')) return;
+  saveMesaje(getMesaje().filter(m => m.id !== id));
+  renderMesaje();
+  updateBadge();
+}
+
+function stergeToateMesajele() {
+  if (!confirm('Ștergi TOATE mesajele? Nu se poate recupera.')) return;
+  saveMesaje([]);
+  renderMesaje();
+  updateBadge();
+}
+
+// ===== UTILIZATORI =====
+function getUsers() {
+  return JSON.parse(localStorage.getItem(USERS_KEY) || '[]');
+}
+
+function renderUtilizatori(filtru = '') {
+  let users = getUsers();
+  if (filtru) users = users.filter(u =>
+    u.nume.toLowerCase().includes(filtru) ||
+    u.email.toLowerCase().includes(filtru)
+  );
+  const el = document.getElementById('utilizatori-table');
+  if (!users.length) {
+    el.innerHTML = `<div class="empty-state"><div class="e-icon">👤</div><p>Niciun utilizator înregistrat.</p></div>`;
+    return;
+  }
+  el.innerHTML = `
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Nume</th>
+          <th>Email</th>
+          <th>Telefon</th>
+          <th>ID cont</th>
+          <th>Rol</th>
+          <th>Acțiuni</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${users.map((u, i) => `
+          <tr>
+            <td class="td-muted">${i + 1}</td>
+            <td><strong>${u.nume}</strong></td>
+            <td class="td-muted">${u.email}</td>
+            <td class="td-muted">${u.telefon}</td>
+            <td class="td-muted" style="font-size:0.78rem;">#${u.id}</td>
+            <td><span class="badge badge-user">Client</span></td>
+            <td>
+              <button class="btn-icon" onclick="stergeUtilizator(${u.id})" title="Șterge cont">🗑</button>
+            </td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
+  `;
+}
+
+function cautaUtilizatori(val) { renderUtilizatori(val.toLowerCase()); }
+
+function stergeUtilizator(id) {
+  if (!confirm('Ștergi acest cont de utilizator?')) return;
+  const users = getUsers().filter(u => u.id !== id);
+  localStorage.setItem(USERS_KEY, JSON.stringify(users));
+  renderUtilizatori();
+  loadDashboard();
+}
+
+function stergeToatiUtilizatorii() {
+  if (!confirm('Ștergi TOATE conturile? Nu se poate recupera.')) return;
+  localStorage.setItem(USERS_KEY, '[]');
+  renderUtilizatori();
+  loadDashboard();
+}
+
+// ===== DASHBOARD =====
+function loadDashboard() {
+  const msgs  = getMesaje();
+  const users = JSON.parse(localStorage.getItem(USERS_KEY) || '[]');
+  const noi   = msgs.filter(m => !m.citit).length;
+
+  document.getElementById('stat-cards').innerHTML = `
+    <div class="stat-card"><div class="sc-icon">👥</div><div class="sc-num">${users.length}</div><div class="sc-label">Utilizatori înregistrați</div></div>
+    <div class="stat-card"><div class="sc-icon">✉</div><div class="sc-num">${msgs.length}</div><div class="sc-label">Mesaje totale</div></div>
+    <div class="stat-card"><div class="sc-icon">🔔</div><div class="sc-num">${noi}</div><div class="sc-label">Mesaje necitite</div></div>
+    <div class="stat-card"><div class="sc-icon">📅</div><div class="sc-num">${new Date().toLocaleDateString('ro-RO')}</div><div class="sc-label">Data de azi</div></div>
+  `;
+
+  const ultimele = [...msgs].slice(0, 5);
+  renderMesajeTable(ultimele, 'dash-mesaje-table');
+  updateBadge();
+}
+
+function updateBadge() {
+  const noi = getMesaje().filter(m => !m.citit).length;
+  const b = document.getElementById('mesaje-badge');
+  if (b) b.textContent = noi > 0 ? noi : '';
+}
+
+// ===== SIDEBAR MOBIL ADMIN =====
+function toggleAdminSidebar() {
+  const sidebar = document.querySelector('.admin-sidebar');
+  sidebar.classList.toggle('open');
+
+  // Overlay pentru închidere click afară
+  let overlay = document.getElementById('sidebar-overlay');
+  if (sidebar.classList.contains('open')) {
+    if (!overlay) {
+      overlay = document.createElement('div');
+      overlay.id = 'sidebar-overlay';
+      overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:499;';
+      overlay.onclick = toggleAdminSidebar;
+      document.body.appendChild(overlay);
+    }
+  } else {
+    if (overlay) overlay.remove();
+  }
+}
+
+// Închide sidebar când dai click pe un link din meniu (mobil)
+document.querySelectorAll('.sidebar-menu a').forEach(a => {
+  a.addEventListener('click', function() {
+    if (window.innerWidth <= 768) {
+      const sidebar = document.querySelector('.admin-sidebar');
+      sidebar.classList.remove('open');
+      const overlay = document.getElementById('sidebar-overlay');
+      if (overlay) overlay.remove();
+    }
+  });
+});
+document.getElementById('change-pass-form').addEventListener('submit', function(e) {
+  e.preventDefault();
+  const oldP = document.getElementById('set-old-pass').value;
+  const newP = document.getElementById('set-new-pass').value;
+  const errEl = document.getElementById('set-alert-err');
+  const okEl  = document.getElementById('set-alert-ok');
+  errEl.classList.remove('show'); okEl.classList.remove('show');
+
+  if (oldP !== adminCreds.pass) {
+    errEl.textContent = 'Parola actuală este incorectă.';
+    errEl.classList.add('show');
+    return;
+  }
+  adminCreds.pass = newP;
+  localStorage.setItem(ADMIN_KEY, JSON.stringify(adminCreds));
+  okEl.textContent = 'Parola a fost schimbată cu succes!';
+  okEl.classList.add('show');
+  this.reset();
+});
+
+function resetareCompleta() {
+  if (!confirm('Ștergi TOATE datele (mesaje + conturi)? Acțiunea nu poate fi anulată!')) return;
+  localStorage.removeItem(MSGS_KEY);
+  localStorage.removeItem(USERS_KEY);
+  alert('Resetare completă efectuată.');
+  loadDashboard();
+}
+
+// ===== HOOK: salvare mesaje din contact.html =====
+// contact.html trebuie să apeleze saveContactMessage() înainte de a afișa succesul
+</script>
+</body>
+</html>

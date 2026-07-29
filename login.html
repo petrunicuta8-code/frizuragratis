@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Conectare – BarberElite</title>
+  <link rel="stylesheet" href="css/style.css"/>
+  <style>
+    /* ===== CONTURI SALVATE ===== */
+    .saved-accounts {
+      margin-bottom: 18px;
+    }
+
+    .saved-accounts-label {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .saved-account-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 14px;
+      background: var(--dark3);
+      border: 1.5px solid #2a2a2a;
+      border-radius: var(--radius);
+      cursor: pointer;
+      transition: all 0.25s;
+      margin-bottom: 8px;
+      position: relative;
+    }
+
+    .saved-account-item:hover {
+      border-color: var(--gold);
+      background: rgba(201,168,76,0.07);
+    }
+
+    .saved-account-avatar {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--gold), var(--gold-light));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--dark);
+      flex-shrink: 0;
+    }
+
+    .saved-account-info { flex: 1; min-width: 0; }
+
+    .saved-account-name {
+      color: var(--white);
+      font-size: 0.92rem;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .saved-account-email {
+      color: var(--text-muted);
+      font-size: 0.78rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .saved-account-arrow {
+      color: var(--gold);
+      font-size: 1rem;
+      flex-shrink: 0;
+    }
+
+    .saved-account-remove {
+      position: absolute;
+      top: 6px; right: 6px;
+      background: transparent;
+      border: none;
+      color: #555;
+      font-size: 0.85rem;
+      cursor: pointer;
+      padding: 2px 5px;
+      border-radius: 4px;
+      line-height: 1;
+      transition: color 0.2s;
+      display: none;
+    }
+
+    .saved-account-item:hover .saved-account-remove { display: block; }
+    .saved-account-remove:hover { color: var(--danger); }
+
+    .form-divider {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 16px 0;
+      color: var(--text-muted);
+      font-size: 0.82rem;
+    }
+
+    .form-divider::before,
+    .form-divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: #2a2a2a;
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav>
+  <div class="nav-logo">
+    <span class="scissors">✂</span>
+    <span>Barber<em>Elite</em></span>
+  </div>
+  <ul class="nav-links">
+    <li><a href="index.html">Acasă</a></li>
+    <li><a href="contact.html">Contact</a></li>
+  </ul>
+  <div class="nav-auth" id="nav-auth">
+    <a href="login.html" class="btn btn-outline">Conectare</a>
+    <a href="register.html" class="btn btn-gold">Înregistrare</a>
+  </div>
+  <button class="hamburger" onclick="openMobileMenu()"><span></span><span></span><span></span></button>
+</nav>
+
+<!-- FORMULAR LOGIN -->
+<div class="form-page">
+  <div class="form-card">
+    <div class="form-card-header">
+      <div class="form-icon">🔐</div>
+      <h2>Conectare</h2>
+      <p>Bun venit înapoi la BarberElite</p>
+    </div>
+
+    <div class="alert alert-error"   id="alert-error"></div>
+    <div class="alert alert-success" id="alert-success"></div>
+
+    <!-- CONTURI SALVATE (apare doar dacă există) -->
+    <div id="saved-accounts-section" style="display:none;">
+      <div class="saved-accounts-label">Conturile tale</div>
+      <div id="saved-accounts-list"></div>
+      <div class="form-divider">sau intră cu alt cont</div>
+    </div>
+
+    <!-- FORMULAR -->
+    <form id="login-form">
+      <div class="form-group">
+        <label for="email">Adresă email</label>
+        <input type="email" id="email" placeholder="email@exemplu.ro" required autocomplete="email" />
+      </div>
+      <div class="form-group">
+        <label for="parola">Parolă</label>
+        <input type="password" id="parola" placeholder="Parola ta" required autocomplete="current-password" />
+      </div>
+
+      <div style="text-align:right; margin-bottom:18px;">
+        <a href="forgot-password.html" style="font-size:0.88rem; color:var(--text-muted);">
+          Am uitat parola
+        </a>
+      </div>
+
+      <button type="submit" class="btn btn-gold btn-full">Conectare</button>
+    </form>
+
+    <div class="form-footer">
+      Nu ai cont? <a href="register.html">Înregistrează-te</a>
+    </div>
+  </div>
+</div>
+
+<script src="js/auth.js"></script>
+<script>
+  // Dacă e deja logat, redirecționează
+  if (getSession()) window.location.href = 'cont.html';
+
+  const SAVED_KEY = 'barberelite_saved_accounts';
+
+  // Citire/scriere conturi salvate
+  function getSavedAccounts() {
+    return JSON.parse(localStorage.getItem(SAVED_KEY) || '[]');
+  }
+
+  function saveSavedAccounts(list) {
+    localStorage.setItem(SAVED_KEY, JSON.stringify(list));
+  }
+
+  function addSavedAccount(user) {
+    let list = getSavedAccounts();
+    // Evită duplicate după email
+    list = list.filter(a => a.email !== user.email);
+    // Adaugă la început
+    list.unshift({ nume: user.nume, email: user.email });
+    // Păstrează max 5 conturi
+    list = list.slice(0, 5);
+    saveSavedAccounts(list);
+  }
+
+  function removeSavedAccount(email) {
+    const list = getSavedAccounts().filter(a => a.email !== email);
+    saveSavedAccounts(list);
+    renderSavedAccounts();
+  }
+
+  // Generare inițiale pentru avatar
+  function getInitials(nume) {
+    return nume.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
+  }
+
+  // Randare conturi salvate
+  function renderSavedAccounts() {
+    const list = getSavedAccounts();
+    const section = document.getElementById('saved-accounts-section');
+    const container = document.getElementById('saved-accounts-list');
+
+    if (!list.length) {
+      section.style.display = 'none';
+      return;
+    }
+
+    section.style.display = 'block';
+    container.innerHTML = list.map(acc => `
+      <div class="saved-account-item" onclick="selectAccount('${acc.email}')">
+        <div class="saved-account-avatar">${getInitials(acc.nume)}</div>
+        <div class="saved-account-info">
+          <div class="saved-account-name">${acc.nume}</div>
+          <div class="saved-account-email">${acc.email}</div>
+        </div>
+        <div class="saved-account-arrow">→</div>
+        <button class="saved-account-remove" onclick="event.stopPropagation(); removeSavedAccount('${acc.email}')" title="Șterge din listă">✕</button>
+      </div>
+    `).join('');
+  }
+
+  // Click pe un cont salvat → completează emailul și focus pe parolă
+  function selectAccount(email) {
+    document.getElementById('email').value = email;
+    document.getElementById('parola').value = '';
+    document.getElementById('parola').focus();
+    // Scroll la formular
+    document.getElementById('login-form').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  // Submit login
+  document.getElementById('login-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const email  = document.getElementById('email').value.trim();
+    const parola = document.getElementById('parola').value;
+
+    const errEl = document.getElementById('alert-error');
+    const sucEl = document.getElementById('alert-success');
+    errEl.classList.remove('show');
+    sucEl.classList.remove('show');
+
+    const result = login(email, parola);
+    if (!result.success) {
+      errEl.textContent = result.message;
+      errEl.classList.add('show');
+    } else {
+      // Salvează contul în lista de conturi cunoscute
+      addSavedAccount(result.user);
+
+      sucEl.textContent = 'Conectare reușită! Se încarcă contul tău...';
+      sucEl.classList.add('show');
+      setTimeout(() => window.location.href = 'cont.html', 1500);
+    }
+  });
+
+  // Inițializare la încărcarea paginii
+  renderSavedAccounts();
+</script>
+</body>
+</html>

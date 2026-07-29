@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>BarberElite – Frizerie Premium</title>
+  <link rel="stylesheet" href="css/style.css"/>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav>
+  <div class="nav-logo">
+    <span class="scissors">✂</span>
+    <span>Barber<em>Elite</em></span>
+  </div>
+  <ul class="nav-links">
+    <li><a href="index.html" class="active">Acasă</a></li>
+    <li><a href="contact.html">Contact</a></li>
+  </ul>
+  <div class="nav-auth" id="nav-auth">
+    <a href="login.html" class="btn btn-outline">Conectare</a>
+    <a href="register.html" class="btn btn-gold">Înregistrare</a>
+  </div>
+  <button class="hamburger" id="hamburger" onclick="openMobileMenu()">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-content">
+    <div class="hero-badge">✦ Frizer la Domiciliu ✦</div>
+    <h1>Stilul tău,<br/><span>acasă la tine.</span></h1>
+    <p>Vin eu la tine sau vii tu la mine — tuns profesional, fără deplasare la salon. Rapid, comod și la prețuri corecte.</p>
+    <div class="hero-btns">
+      <a href="register.html" class="btn btn-gold">Creează cont</a>
+      <a href="galerie.html" class="btn btn-outline">Vezi galeria</a>
+    </div>
+  </div>
+</section>
+
+<!-- SERVICII -->
+<section id="servicii">
+  <div class="section-title">
+    <h2>Serviciile <span>Noastre</span></h2>
+    <p>Fiecare vizită e o experiență. Alege serviciul potrivit pentru tine.</p>
+    <div class="gold-line"></div>
+  </div>
+  <div class="services-grid">
+    <div class="service-card">
+      <div class="service-icon">🚗</div>
+      <h3>Vin eu la tine acasă</h3>
+      <p>Mă deplasez la adresa ta. Tu nu te miști de acasă, eu aduc tot echipamentul.</p>
+      <div class="service-price">45 lei</div>
+    </div>
+    <div class="service-card">
+      <div class="service-icon">🏠</div>
+      <h3>Vii tu la mine acasă</h3>
+      <p>Te primesc la mine acasă într-un spațiu curat și bine echipat.</p>
+      <div class="service-price">35 lei</div>
+    </div>
+  </div>
+</section>
+
+<!-- DESPRE NOI -->
+<section class="about-section">
+  <div class="about-inner" style="justify-content:center;">
+    <div class="about-text" style="max-width:600px;">
+      <h2>De ce să alegi <span>BarberElite?</span></h2>
+      <p>Vin direct la tine acasă cu tot echipamentul necesar sau te primesc la mine — tu alegi ce ți se potrivește mai bine.</p>
+      <p>Fără cozi, fără deplasare la salon. Serviciu rapid, curat și profesional, la prețuri corecte.</p>
+      <div class="about-stats">
+        <div class="stat">
+          <div class="stat-num">5+</div>
+          <div class="stat-label">Ani experiență</div>
+        </div>
+        <div class="stat">
+          <div class="stat-num">500+</div>
+          <div class="stat-label">Clienți mulțumiți</div>
+        </div>
+        <div class="stat">
+          <div class="stat-num">35 lei</div>
+          <div class="stat-label">De la</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- GALERIE PREVIEW - activează după ce adaugi pozele în images/ -->
+<!--
+<section>
+  <div class="section-title">
+    <h2>Din <span>Galerie</span></h2>
+    <p>Câteva din lucrările mele recente.</p>
+    <div class="gold-line"></div>
+  </div>
+  <div class="gallery-grid">
+    <div class="gallery-item">
+      <img src="images/poza1.jpg" alt="Lucrare 1"/>
+      <div class="gallery-overlay"><span>🔍</span></div>
+    </div>
+    <div class="gallery-item">
+      <img src="images/poza2.jpg" alt="Lucrare 2"/>
+      <div class="gallery-overlay"><span>🔍</span></div>
+    </div>
+    <div class="gallery-item">
+      <img src="images/poza3.jpg" alt="Lucrare 3"/>
+      <div class="gallery-overlay"><span>🔍</span></div>
+    </div>
+    <div class="gallery-item">
+      <img src="images/poza4.jpg" alt="Lucrare 4"/>
+      <div class="gallery-overlay"><span>🔍</span></div>
+    </div>
+  </div>
+  <div style="text-align:center; margin-top:35px;">
+    <a href="galerie.html" class="btn btn-outline">Vezi toate fotografiile</a>
+  </div>
+</section>
+-->
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-logo">Barber<span>Elite</span></div>
+    <ul class="footer-links">
+      <li><a href="index.html">Acasă</a></li>
+    <li><a href="contact.html">Contact</a></li>
+      <li><a href="login.html">Conectare</a></li>
+    </ul>
+    <p>© 2026 BarberElite. Toate drepturile rezervate.</p>
+  </div>
+</footer>
+
+<script src="js/auth.js"></script>
+<script>
+  // Ascunde complet imaginile care nu se încarcă
+  document.querySelectorAll('.gallery-item img, .about-img-frame img').forEach(img => {
+    img.addEventListener('error', function() {
+      this.closest('.gallery-item, .about-img-frame') && (this.closest('.gallery-item, .about-img-frame').style.display = 'none');
+    });
+  });
+
+  // ===== BUTON ADMIN - vizibil doar pentru emailurile de mai jos =====
+  const ADMIN_EMAILS = [
+    'petrunicuta8@gmail.com',  // lucii
+    'aici pui email'           // Denis
+  ];
+
+  const session = getSession();
+  if (session && ADMIN_EMAILS.includes(session.email)) {
+    const adminBtn = document.createElement('a');
+    adminBtn.href = 'admin.html';
+    adminBtn.className = 'btn btn-gold';
+    adminBtn.style.cssText = 'font-size:0.82rem; padding:8px 16px; background:linear-gradient(135deg,#c9a84c,#e8c96a);';
+    adminBtn.textContent = '🛡 Conectare Admin';
+    document.getElementById('nav-auth').prepend(adminBtn);
+  }
+</script>
+</html>

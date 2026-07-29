@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Contact – BarberElite</title>
+  <link rel="stylesheet" href="css/style.css"/>
+  <style>
+    .map-placeholder {
+      width: 100%;
+      height: 220px;
+      background: var(--dark3);
+      border: 1px solid #2a2a2a;
+      border-radius: var(--radius);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      margin-top: 30px;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .map-placeholder span { font-size: 2.5rem; }
+
+    .social-links {
+      display: flex;
+      gap: 15px;
+      margin-top: 20px;
+    }
+
+    .social-btn {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 18px;
+      border: 1.5px solid #333;
+      border-radius: var(--radius);
+      color: var(--text-muted);
+      font-size: 0.88rem;
+      transition: all 0.3s;
+      background: transparent;
+    }
+
+    .social-btn:hover {
+      border-color: var(--gold);
+      color: var(--gold);
+      background: rgba(201,168,76,0.08);
+    }
+
+    .success-overlay {
+      display: none;
+      text-align: center;
+      padding: 30px 0;
+    }
+
+    .success-overlay .big-icon { font-size: 3.5rem; margin-bottom: 12px; }
+    .success-overlay h3 { color: var(--white); margin-bottom: 8px; }
+    .success-overlay p { color: var(--text-muted); font-size: 0.9rem; }
+  </style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav>
+  <div class="nav-logo">
+    <span class="scissors">✂</span>
+    <span>Barber<em>Elite</em></span>
+  </div>
+  <ul class="nav-links">
+    <li><a href="index.html">Acasă</a></li>
+    <li><a href="contact.html" class="active">Contact</a></li>
+  </ul>
+  <div class="nav-auth" id="nav-auth">
+    <a href="login.html" class="btn btn-outline">Conectare</a>
+    <a href="register.html" class="btn btn-gold">Înregistrare</a>
+  </div>
+  <button class="hamburger" onclick="openMobileMenu()"><span></span><span></span><span></span></button>
+</nav>
+
+<!-- CONTACT -->
+<div class="contact-page">
+  <div class="section-title">
+    <h2>Contactează-<span>mă</span></h2>
+    <p>Programează-te acum — vin eu la tine sau vii tu la mine.</p>
+    <div class="gold-line"></div>
+  </div>
+
+  <div class="contact-grid">
+
+    <!-- INFO STÂNGA -->
+    <div class="contact-info">
+      <h3>Informații & Tarife</h3>
+
+      <div class="contact-item">
+        <div class="contact-item-icon">🚗</div>
+        <div class="contact-item-text">
+          <h4>Vin eu la tine acasă</h4>
+          <p>Mă deplasez la adresa ta cu tot echipamentul.<br/>
+          <strong style="color:var(--gold);">45 lei / tuns</strong></p>
+        </div>
+      </div>
+
+      <div class="contact-item">
+        <div class="contact-item-icon">🏠</div>
+        <div class="contact-item-text">
+          <h4>Vii tu la mine acasă</h4>
+          <p>Te primesc la mine, spațiu curat și echipat.<br/>
+          <strong style="color:var(--gold);">35 lei / tuns</strong></p>
+        </div>
+      </div>
+
+      <div class="contact-item">
+        <div class="contact-item-icon">📞</div>
+        <div class="contact-item-text">
+          <h4>Telefon / WhatsApp</h4>
+          <p><a href="tel:+40773394663">0773 394 663</a></p>
+        </div>
+      </div>
+
+      <div class="contact-item">
+        <div class="contact-item-icon">📧</div>
+        <div class="contact-item-text">
+          <h4>Email</h4>
+          <p><a href="mailto:barberelitero@gmail.com">barberelitero@gmail.com</a></p>
+        </div>
+      </div>
+
+      <div class="contact-item">
+        <div class="contact-item-icon">🕐</div>
+        <div class="contact-item-text">
+          <h4>Program programări</h4>
+          <table class="hours-table">
+            <tr><td>Luni – Vineri</td><td>09:00 – 20:00</td></tr>
+            <tr><td>Sâmbătă</td><td>09:00 – 18:00</td></tr>
+            <tr><td>Duminică</td><td>10:00 – 15:00</td></tr>
+          </table>
+        </div>
+      </div>
+
+
+    </div>
+
+    <!-- FORMULAR DREAPTA -->
+    <div class="contact-form-card">
+      <h3>✉ Trimite-ne un mesaj</h3>
+
+      <div class="alert alert-error" id="alert-error"></div>
+
+      <!-- Formular -->
+      <div id="contact-form-wrapper">
+        <form id="contact-form">
+          <div class="form-group">
+            <label for="c-nume">Numele tău</label>
+            <input type="text" id="c-nume" placeholder="Ion Popescu" required />
+          </div>
+          <div class="form-group">
+            <label for="c-email">Email</label>
+            <input type="email" id="c-email" placeholder="email@exemplu.ro" required />
+          </div>
+          <div class="form-group">
+            <label for="c-telefon">Telefon <span style="color:var(--text-muted);font-size:0.8rem;">(opțional)</span></label>
+            <input type="tel" id="c-telefon" placeholder="07xx xxx xxx" />
+          </div>
+          <div class="form-group">
+            <label for="c-subiect">Subiect</label>
+            <select id="c-subiect">
+              <option value="">Alege subiectul...</option>
+              <option value="programare-acasa">Programare – vii tu la mine (35 lei)</option>
+              <option value="programare-deplasare">Programare – vin eu la tine (45 lei)</option>
+              <option value="informatii">Informații servicii</option>
+              <option value="altele">Altele</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="c-mesaj">Mesajul tău</label>
+            <textarea id="c-mesaj" placeholder="Scrie-ne..." required></textarea>
+          </div>
+          <button type="submit" class="btn btn-gold btn-full">Trimite mesajul</button>
+        </form>
+      </div>
+
+      <!-- Confirmare -->
+      <div class="success-overlay" id="success-overlay">
+        <div class="big-icon">✅</div>
+        <h3>Mesaj trimis cu succes!</h3>
+        <p>Îți mulțumim, <span id="confirm-name"></span>!<br/>Te vom contacta în cel mai scurt timp.</p>
+        <button class="btn btn-outline" style="margin-top:20px;" onclick="resetContact()">
+          Trimite alt mesaj
+        </button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-logo">Barber<span>Elite</span></div>
+    <ul class="footer-links">
+      <li><a href="index.html">Acasă</a></li>
+    <li><a href="contact.html">Contact</a></li>
+      <li><a href="login.html">Conectare</a></li>
+    </ul>
+    <p>© 2026 BarberElite. Toate drepturile rezervate.</p>
+  </div>
+</footer>
+
+<script src="js/auth.js"></script>
+<script type="module">
+  import { db, collection, addDoc, serverTimestamp } from './js/firebase-config.js';
+
+  document.getElementById('contact-form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const nume    = document.getElementById('c-nume').value.trim();
+    const email   = document.getElementById('c-email').value.trim();
+    const telefon = document.getElementById('c-telefon').value.trim();
+    const subiect = document.getElementById('c-subiect').value;
+    const mesaj   = document.getElementById('c-mesaj').value.trim();
+    const errEl   = document.getElementById('alert-error');
+    errEl.classList.remove('show');
+
+    if (!mesaj) {
+      errEl.textContent = 'Te rog completează mesajul.';
+      errEl.classList.add('show');
+      return;
+    }
+
+    const btn = this.querySelector('button[type="submit"]');
+    btn.textContent = 'Se trimite...';
+    btn.disabled = true;
+
+    try {
+      await addDoc(collection(db, 'mesaje'), {
+        nume,
+        email,
+        telefon: telefon || '—',
+        subiect: subiect || 'General',
+        mesaj,
+        citit: false,
+        data: serverTimestamp()
+      });
+
+      document.getElementById('confirm-name').textContent = nume;
+      document.getElementById('contact-form-wrapper').style.display = 'none';
+      document.getElementById('success-overlay').style.display = 'block';
+    } catch(err) {
+      errEl.textContent = 'Eroare la trimitere. Încearcă din nou.';
+      errEl.classList.add('show');
+      btn.textContent = 'Trimite mesajul';
+      btn.disabled = false;
+    }
+  });
+
+  function resetContact() {
+    document.getElementById('contact-form').reset();
+    document.getElementById('contact-form-wrapper').style.display = 'block';
+    document.getElementById('success-overlay').style.display = 'none';
+  }
+  window.resetContact = resetContact;
+</script>
+</body>
+</html>

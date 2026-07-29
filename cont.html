@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Contul meu – BarberElite</title>
+  <link rel="stylesheet" href="css/style.css"/>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav>
+  <div class="nav-logo">
+    <span class="scissors">✂</span>
+    <span>Barber<em>Elite</em></span>
+  </div>
+  <ul class="nav-links">
+    <li><a href="index.html">Acasă</a></li>
+    <li><a href="contact.html">Contact</a></li>
+  </ul>
+  <div class="nav-auth" id="nav-auth"></div>
+  <button class="hamburger" onclick="openMobileMenu()"><span></span><span></span><span></span></button>
+</nav>
+
+<!-- DASHBOARD -->
+<div class="dashboard">
+  <div class="dashboard-card">
+    <div class="dashboard-avatar" id="avatar-initials">?</div>
+    <h2 id="user-name">—</h2>
+    <p class="email" id="user-email">—</p>
+    <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:8px;">
+      📞 <span id="user-telefon">—</span>
+    </p>
+
+    <div style="border-top:1px solid #2a2a2a; margin:25px 0; padding-top:25px;">
+      <h3 style="color:var(--gold); margin-bottom:15px;">Servicii favorite</h3>
+      <p style="color:var(--text-muted); font-size:0.9rem;">
+        Explorează serviciile noastre și programează-te pentru experiența BarberElite.
+      </p>
+      <a href="index.html#servicii" class="btn btn-outline" style="margin-top:15px;">
+        Vezi servicii
+      </a>
+    </div>
+
+    <div style="border-top:1px solid #2a2a2a; padding-top:25px;">
+      <button class="btn btn-danger" onclick="logout()">Deconectare</button>
+    </div>
+  </div>
+</div>
+
+<script src="js/auth.js"></script>
+<script>
+  const session = getSession();
+  if (!session) {
+    window.location.href = 'login.html';
+  } else {
+    document.getElementById('user-name').textContent    = session.nume;
+    document.getElementById('user-email').textContent   = session.email;
+    document.getElementById('user-telefon').textContent = session.telefon;
+    const initials = session.nume.split(' ').map(w => w[0]).join('').toUpperCase().slice(0,2);
+    document.getElementById('avatar-initials').textContent = initials;
+  }
+</script>
+</body>
+</html>

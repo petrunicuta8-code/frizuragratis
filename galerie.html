@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Galerie – BarberElite</title>
+  <link rel="stylesheet" href="css/style.css"/>
+  <style>
+    .gallery-page { max-width: 1200px; margin: 0 auto; padding: 80px 40px; }
+
+    .gallery-filters {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-bottom: 40px;
+    }
+
+    .filter-btn {
+      padding: 8px 22px;
+      border-radius: 50px;
+      border: 1.5px solid #333;
+      background: transparent;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .filter-btn:hover,
+    .filter-btn.active {
+      border-color: var(--gold);
+      color: var(--gold);
+      background: rgba(201,168,76,0.08);
+    }
+
+    .gallery-full {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 20px;
+    }
+
+    .gallery-full .gallery-item {
+      aspect-ratio: 4/3;
+      border-radius: 12px;
+      overflow: hidden;
+      position: relative;
+      cursor: pointer;
+    }
+
+    .gallery-full .gallery-item img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      transition: transform 0.4s;
+    }
+
+    .gallery-full .gallery-item:hover img { transform: scale(1.07); }
+
+    .gallery-full .gallery-overlay {
+      position: absolute; inset: 0;
+      background: linear-gradient(to top, rgba(0,0,0,0.75) 0%, transparent 60%);
+      display: flex; align-items: flex-end;
+      padding: 15px;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .gallery-full .gallery-item:hover .gallery-overlay { opacity: 1; }
+
+    .gallery-overlay-text {
+      color: white;
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+
+    /* LIGHTBOX */
+    .lightbox {
+      display: none;
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.92);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .lightbox.open { display: flex; }
+
+    .lightbox img {
+      max-width: 90vw;
+      max-height: 85vh;
+      border-radius: 12px;
+      border: 2px solid var(--gold);
+      object-fit: contain;
+    }
+
+    .lightbox-close {
+      position: absolute;
+      top: 20px; right: 30px;
+      font-size: 2.5rem;
+      color: white;
+      cursor: pointer;
+      line-height: 1;
+      transition: color 0.3s;
+    }
+
+    .lightbox-close:hover { color: var(--gold); }
+
+    .lightbox-nav {
+      position: absolute;
+      top: 50%; transform: translateY(-50%);
+      font-size: 2.5rem;
+      color: white;
+      cursor: pointer;
+      padding: 10px;
+      transition: color 0.3s;
+      user-select: none;
+    }
+
+    .lightbox-nav:hover { color: var(--gold); }
+    .lightbox-prev { left: 20px; }
+    .lightbox-next { right: 20px; }
+
+    .lightbox-caption {
+      position: absolute;
+      bottom: 20px;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav>
+  <div class="nav-logo">
+    <span class="scissors">✂</span>
+    <span>Barber<em>Elite</em></span>
+  </div>
+  <ul class="nav-links">
+    <li><a href="index.html">Acasă</a></li>
+    <li><a href="contact.html">Contact</a></li>
+  </ul>
+  <div class="nav-auth" id="nav-auth">
+    <a href="login.html" class="btn btn-outline">Conectare</a>
+    <a href="register.html" class="btn btn-gold">Înregistrare</a>
+  </div>
+  <button class="hamburger" onclick="openMobileMenu()"><span></span><span></span><span></span></button>
+</nav><!-- GALERIE -->
+<div class="gallery-page">
+  <div class="section-title">
+    <h2>Galeria <span>Noastră</span></h2>
+    <p>Lucrările echipei BarberElite — tuns, bărbierit și styling de excepție.</p>
+    <div class="gold-line"></div>
+  </div>
+
+  <div class="gallery-filters">
+    <button class="filter-btn active" data-filter="all">Toate</button>
+  </div>
+
+  <div class="gallery-full" id="gallery-grid">
+    <!-- Pozele sunt generate din JS -->
+  </div>
+</div>
+
+<!-- LIGHTBOX -->
+<div class="lightbox" id="lightbox">
+  <span class="lightbox-close" onclick="closeLightbox()">×</span>
+  <span class="lightbox-nav lightbox-prev" onclick="changeImage(-1)">&#10094;</span>
+  <img id="lightbox-img" src="" alt=""/>
+  <span class="lightbox-nav lightbox-next" onclick="changeImage(1)">&#10095;</span>
+  <div class="lightbox-caption" id="lightbox-caption"></div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-logo">Barber<span>Elite</span></div>
+    <ul class="footer-links">
+      <li><a href="index.html">Acasă</a></li>
+    <li><a href="contact.html">Contact</a></li>
+    </ul>
+    <p>© 2026 BarberElite. Toate drepturile rezervate.</p>
+  </div>
+</footer>
+
+<script src="js/auth.js"></script>
+<script>
+  // =====================================================
+  // ADAUGĂ POZELE TALE AICI
+  // Înlocuiește "images/poza1.jpg" cu calea către poza ta
+  // cat poate fi: "tuns", "barbierit", "styling"
+  // =====================================================
+  const photos = [
+    { src: 'images/poza1.jpg', label: 'Lucrare 1', cat: 'tuns' },
+    { src: 'images/poza2.jpg', label: 'Lucrare 2', cat: 'tuns' },
+    { src: 'images/poza3.jpg', label: 'Lucrare 3', cat: 'barbierit' },
+    { src: 'images/poza4.jpg', label: 'Lucrare 4', cat: 'tuns' },
+    { src: 'images/poza5.jpg', label: 'Lucrare 5', cat: 'styling' },
+    { src: 'images/poza6.jpg', label: 'Lucrare 6', cat: 'tuns' },
+  ];
+
+  let currentIndex = 0;
+  let filtered = [...photos];
+
+  function renderGallery(items) {
+    const grid = document.getElementById('gallery-grid');
+
+    // Filtrează doar pozele care există efectiv
+    // Le testăm pe rând; cele care dau eroare dispar
+    grid.innerHTML = items.map((p, i) => `
+      <div class="gallery-item" id="gitem-${i}" onclick="openLightbox(${i})" data-index="${i}">
+        <img src="${p.src}" alt="${p.label}" loading="lazy"
+             onerror="document.getElementById('gitem-${i}').remove(); checkEmpty()"/>
+        <div class="gallery-overlay">
+          <div class="gallery-overlay-text">✂ ${p.label}</div>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function checkEmpty() {
+    const grid = document.getElementById('gallery-grid');
+    if (!grid.querySelector('.gallery-item')) {
+      grid.innerHTML = `
+        <div style="grid-column:1/-1; text-align:center; padding:60px 20px; color:var(--text-muted);">
+          <div style="font-size:3rem; margin-bottom:15px;">✂</div>
+          <p style="font-size:1rem;">Pozele vor apărea în curând.</p>
+        </div>`;
+    }
+  }
+
+  function openLightbox(index) {
+    currentIndex = index;
+    document.getElementById('lightbox-img').src = filtered[index].src;
+    document.getElementById('lightbox-caption').textContent = filtered[index].label;
+    document.getElementById('lightbox').classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeLightbox() {
+    document.getElementById('lightbox').classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  function changeImage(dir) {
+    currentIndex = (currentIndex + dir + filtered.length) % filtered.length;
+    document.getElementById('lightbox-img').src = filtered[currentIndex].src;
+    document.getElementById('lightbox-caption').textContent = filtered[currentIndex].label;
+  }
+
+  // Filtre
+  document.querySelectorAll('.filter-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      this.classList.add('active');
+      const cat = this.dataset.filter;
+      filtered = cat === 'all' ? [...photos] : photos.filter(p => p.cat === cat);
+      renderGallery(filtered);
+    });
+  });
+
+  // Închide cu ESC sau click în afara imaginii
+  document.getElementById('lightbox').addEventListener('click', function(e) {
+    if (e.target === this) closeLightbox();
+  });
+
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeLightbox();
+    if (e.key === 'ArrowRight') changeImage(1);
+    if (e.key === 'ArrowLeft') changeImage(-1);
+  });
+
+  renderGallery(filtered);
+</script>
+</body>
+</html>

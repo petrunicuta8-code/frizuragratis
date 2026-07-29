@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Înregistrare – BarberElite</title>
+  <link rel="stylesheet" href="css/style.css"/>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav>
+  <div class="nav-logo">
+    <span class="scissors">✂</span>
+    <span>Barber<em>Elite</em></span>
+  </div>
+  <ul class="nav-links">
+    <li><a href="index.html">Acasă</a></li>
+    <li><a href="contact.html">Contact</a></li>
+  </ul>
+  <div class="nav-auth" id="nav-auth">
+    <a href="login.html" class="btn btn-outline">Conectare</a>
+    <a href="register.html" class="btn btn-gold">Înregistrare</a>
+  </div>
+  <button class="hamburger" onclick="openMobileMenu()"><span></span><span></span><span></span></button>
+</nav>
+<div class="form-page">
+  <div class="form-card">
+    <div class="form-card-header">
+      <div class="form-icon">✂</div>
+      <h2>Creează cont</h2>
+      <p>Alătură-te comunității BarberElite</p>
+    </div>
+
+    <div class="alert alert-error" id="alert-error"></div>
+    <div class="alert alert-success" id="alert-success"></div>
+
+    <form id="register-form">
+      <div class="form-group">
+        <label for="nume">Nume complet</label>
+        <input type="text" id="nume" placeholder="ex. Ion Popescu" required />
+      </div>
+      <div class="form-group">
+        <label for="email">Adresă email</label>
+        <input type="email" id="email" placeholder="email@exemplu.ro" required />
+      </div>
+      <div class="form-group">
+        <label for="telefon">Număr de telefon <span style="color:var(--text-muted);font-size:0.8rem;">(folosit pentru recuperare parolă)</span></label>
+        <input type="tel" id="telefon" placeholder="07xx xxx xxx" required />
+      </div>
+      <div class="form-group">
+        <label for="parola">Parolă</label>
+        <input type="password" id="parola" placeholder="Minim 6 caractere" required minlength="6" />
+      </div>
+      <div class="form-group">
+        <label for="parola2">Confirmă parola</label>
+        <input type="password" id="parola2" placeholder="Repetă parola" required />
+      </div>
+
+      <button type="submit" class="btn btn-gold btn-full">Creează contul</button>
+    </form>
+
+    <div class="form-footer">
+      Ai deja cont? <a href="login.html">Conectează-te</a>
+    </div>
+  </div>
+</div>
+
+<script src="js/auth.js"></script>
+<script>
+  document.getElementById('register-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const nume    = document.getElementById('nume').value.trim();
+    const email   = document.getElementById('email').value.trim();
+    const telefon = document.getElementById('telefon').value.trim();
+    const parola  = document.getElementById('parola').value;
+    const parola2 = document.getElementById('parola2').value;
+
+    const errEl = document.getElementById('alert-error');
+    const sucEl = document.getElementById('alert-success');
+    errEl.classList.remove('show');
+    sucEl.classList.remove('show');
+
+    if (parola !== parola2) {
+      errEl.textContent = 'Parolele nu se potrivesc.';
+      errEl.classList.add('show');
+      return;
+    }
+
+    const result = register(nume, email, telefon, parola);
+    if (!result.success) {
+      errEl.textContent = result.message;
+      errEl.classList.add('show');
+    } else {
+      sucEl.textContent = result.message + ' Vei fi redirecționat...';
+      sucEl.classList.add('show');
+      this.reset();
+      setTimeout(() => window.location.href = 'login.html', 2000);
+    }
+  });
+</script>
+</body>
+</html>
