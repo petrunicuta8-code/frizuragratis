@@ -459,8 +459,9 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db  = getFirestore(app);
 
-const USERS_KEY = 'frizerie_users';
+const ADMIN_EMAILS = ['petrunicuta8@gmail.com', 'barberelitero@gmail.com'];
 let mesajeCache = [];
+let utilizatoriCache = [];
 
 // ===== FIRESTORE MESAJE =====
 function startListen() {
@@ -496,10 +497,9 @@ function showPage(id, el) {
 
 // ===== DASHBOARD =====
 function loadDashboard() {
-  const users = JSON.parse(localStorage.getItem(USERS_KEY) || '[]');
   const noi = mesajeCache.filter(m => !m.citit).length;
   document.getElementById('stat-cards').innerHTML = `
-    <div class="stat-card"><div class="sc-icon">👥</div><div class="sc-num">${users.length}</div><div class="sc-label">Utilizatori</div></div>
+    <div class="stat-card"><div class="sc-icon">👥</div><div class="sc-num">${utilizatoriCache.length}</div><div class="sc-label">Utilizatori</div></div>
     <div class="stat-card"><div class="sc-icon">✉</div><div class="sc-num">${mesajeCache.length}</div><div class="sc-label">Mesaje totale</div></div>
     <div class="stat-card"><div class="sc-icon">🔔</div><div class="sc-num">${noi}</div><div class="sc-label">Necitite</div></div>
     <div class="stat-card"><div class="sc-icon">📅</div><div class="sc-num">${new Date().toLocaleDateString('ro-RO')}</div><div class="sc-label">Azi</div></div>
@@ -592,11 +592,23 @@ async function stergeToateMesajele() {
 
 function cautaMesaje(val) { renderMesaje(val.toLowerCase()); }
 
-// ===== UTILIZATORI =====
+// ===== UTILIZATORI (Firestore) =====
+
+function startListenUtilizatori() {
+  onSnapshot(collection(db, 'utilizatori'), snap => {
+    utilizatoriCache = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    if (document.getElementById('page-utilizatori').classList.contains('active')) {
+      renderUtilizatori();
+    }
+    loadDashboard();
+  });
+}
+
 function renderUtilizatori(filtru = '') {
-  let users = JSON.parse(localStorage.getItem(USERS_KEY) || '[]');
+  let users = utilizatoriCache;
   if (filtru) users = users.filter(u =>
-    u.nume.toLowerCase().includes(filtru) || u.email.toLowerCase().includes(filtru)
+    (u.nume||'').toLowerCase().includes(filtru) ||
+    (u.email||'').toLowerCase().includes(filtru)
   );
   const el = document.getElementById('utilizatori-table');
   if (!users.length) {
@@ -604,16 +616,16 @@ function renderUtilizatori(filtru = '') {
     return;
   }
   el.innerHTML = `<table><thead><tr>
-    <th>#</th><th>Nume</th><th>Email</th><th>Telefon</th><th>Rol</th><th>Acțiuni</th>
+    <th>#</th><th>Nume</th><th>Email</th><th>Telefon</th><th>Înregistrat</th><th>Acțiuni</th>
   </tr></thead><tbody>
     ${users.map((u, i) => `
       <tr>
         <td class="td-muted">${i+1}</td>
-        <td><strong>${u.nume}</strong></td>
-        <td class="td-muted">${u.email}</td>
-        <td class="td-muted">${u.telefon}</td>
-        <td><span class="badge badge-user">Client</span></td>
-        <td><button class="btn-icon" onclick="stergeUser(${u.id})">🗑</button></td>
+        <td><strong>${u.nume||'—'}</strong></td>
+        <td class="td-muted">${u.email||'—'}</td>
+        <td class="td-muted">${u.telefon||'—'}</td>
+        <td class="td-muted">${u.creatLa ? new Date(u.creatLa).toLocaleDateString('ro-RO') : '—'}</td>
+        <td><button class="btn-icon" onclick="stergeUser('${u.id}')">🗑</button></td>
       </tr>
     `).join('')}
   </tbody></table>`;
@@ -621,19 +633,17 @@ function renderUtilizatori(filtru = '') {
 
 function cautaUtilizatori(val) { renderUtilizatori(val.toLowerCase()); }
 
-function stergeUser(id) {
+async function stergeUser(id) {
   if (!confirm('Ștergi acest cont?')) return;
-  const users = JSON.parse(localStorage.getItem(USERS_KEY)||'[]').filter(u => u.id !== id);
-  localStorage.setItem(USERS_KEY, JSON.stringify(users));
-  renderUtilizatori();
-  loadDashboard();
+  try {
+    await deleteDoc(doc(db, 'utilizatori', id));
+  } catch(e) { alert('Eroare: ' + e.message); }
 }
 
-function stergeToatiUtilizatorii() {
+async function stergeToatiUtilizatorii() {
   if (!confirm('Ștergi TOATE conturile?')) return;
-  localStorage.setItem(USERS_KEY, '[]');
-  renderUtilizatori();
-  loadDashboard();
+  const snap = await getDocs(collection(db, 'utilizatori'));
+  for (const d of snap.docs) await deleteDoc(doc(db, 'utilizatori', d.id));
 }
 
 // ===== PROGRAMĂRI (Firestore) =====
@@ -798,6 +808,7 @@ window.updateBadge = updateBadge;
 // START
 startListen();
 startListenProgramari();
+startListenUtilizatori();
 loadDashboard();
 </script>
 </body>

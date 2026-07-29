@@ -3,8 +3,15 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Contact – NADO dnzz</title>
+  <title>Contact – NADO dnzz | Programează-te Online</title>
+  <meta name="description" content="Contactează-mă pentru o programare. Frizer la domiciliu – vin eu la tine (45 lei) sau vii tu la mine (35 lei). Răspund rapid."/>
+  <meta name="keywords" content="programare frizer, contact frizer, frizer la domiciliu, tuns acasa"/>
+  <meta name="robots" content="index, follow"/>
+  <meta property="og:title" content="Contact – NADO dnzz"/>
+  <meta property="og:description" content="Programează-te pentru o tunsoare la domiciliu."/>
+  <meta property="og:type" content="website"/>
   <link rel="stylesheet" href="css/style.css"/>
+  <link rel="stylesheet" href="css/animations.css"/>
   <style>
     .map-placeholder {
       width: 100%;
@@ -60,7 +67,19 @@
     .success-overlay p { color: var(--text-muted); font-size: 0.9rem; }
   </style>
 </head>
-<body>
+<body class="page-enter">
+
+<!-- BULE ANIMATE -->
+<div class="bubbles-container">
+  <div class="bubble"></div><div class="bubble"></div><div class="bubble"></div>
+  <div class="bubble"></div><div class="bubble"></div><div class="bubble"></div>
+  <div class="bubble"></div><div class="bubble"></div><div class="bubble"></div>
+  <div class="bubble"></div><div class="bubble"></div><div class="bubble"></div>
+  <div class="bubble"></div><div class="bubble"></div><div class="bubble"></div>
+  <div class="scissors-particle">✂</div><div class="scissors-particle">✂</div>
+  <div class="scissors-particle">✂</div><div class="scissors-particle">✂</div>
+  <div class="scissors-particle">✂</div>
+</div>
 
 <!-- NAVBAR -->
 <nav>
@@ -200,9 +219,56 @@
   </div>
 </footer>
 
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <script type="module" src="js/auth.js"></script>
 <script type="module">
   import { db, collection, addDoc, serverTimestamp } from './js/firebase-config.js';
+
+  // ===== EMAILJS CONFIG =====
+  // Pași pentru activare:
+  // 1. Mergi pe https://www.emailjs.com și creează cont gratuit
+  // 2. Add New Service → Gmail → conectează barberelitero@gmail.com → copiază Service ID
+  // 3. Email Templates → Create Template → copiază Template ID
+  // 4. Account → API Keys → copiază Public Key
+  // 5. Înlocuiește valorile de mai jos cu ale tale
+  const EMAILJS_PUBLIC_KEY      = '8Rh0YRaFzOh5v7eI3';
+  const EMAILJS_SERVICE_ID      = 'service_pxk9y2i';
+  const EMAILJS_TEMPLATE_ID     = 'template_atzyaq5';  // email către tine (admin)
+  const EMAILJS_TEMPLATE_CLIENT = 'template_rqqv8bc';  // email confirmare către client
+
+  emailjs.init(EMAILJS_PUBLIC_KEY);
+
+  async function trimiteNotificare(nume, email, telefon, subiect, mesaj) {
+    try {
+      // Email către tine (admin)
+      await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
+        from_name:  nume,
+        from_email: email,
+        telefon:    telefon || '—',
+        subiect:    subiect || 'General',
+        mesaj:      mesaj,
+        reply_to:   email,
+        data:       new Date().toLocaleString('ro-RO')
+      });
+    } catch(err) {
+      console.warn('EmailJS admin:', err);
+    }
+  }
+
+  async function trimiteConfirmareClient(nume, email, subiect, mesaj) {
+    try {
+      // Email de confirmare către client
+      await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_CLIENT, {
+        client_nume:  nume,
+        client_email: email,
+        subiect:      subiect || 'General',
+        mesaj:        mesaj,
+        data:         new Date().toLocaleString('ro-RO')
+      });
+    } catch(err) {
+      console.warn('EmailJS client:', err);
+    }
+  }
 
   document.getElementById('contact-form').addEventListener('submit', async function(e) {
     e.preventDefault();
@@ -225,6 +291,7 @@
     btn.disabled = true;
 
     try {
+      // 1. Salvează în Firebase
       await addDoc(collection(db, 'mesaje'), {
         nume,
         email,
@@ -234,6 +301,10 @@
         citit: false,
         data: serverTimestamp()
       });
+
+      // 2. Trimite notificări email (în paralel, nu blochează)
+      trimiteNotificare(nume, email, telefon, subiect, mesaj);
+      trimiteConfirmareClient(nume, email, subiect, mesaj);
 
       document.getElementById('confirm-name').textContent = nume;
       document.getElementById('contact-form-wrapper').style.display = 'none';
