@@ -864,7 +864,6 @@ footer p {
 /* Hamburger ascuns pe desktop */
 .hamburger { display: none; }
 .mobile-menu { display: none; }
-url(../../../AppData/Local/Packages/MicrosoftWindows.Client.Core_cw5n1h2txyewy/TempState/ScreenClip/{713CC533-215B-4B41-A875-3FD830DC2F04\}.png)
 
 @media (max-width: 768px) {
   .hamburger {
