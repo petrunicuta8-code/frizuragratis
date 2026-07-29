@@ -403,6 +403,10 @@
               <label style="color:var(--text);font-size:0.88rem;display:block;margin-bottom:6px;">Notă (opțional)</label>
               <input type="text" id="p-nota" class="search-box" style="width:100%;" placeholder="ex. adresa clientului" />
             </div>
+            <div class="form-group" style="margin-top:12px;">
+              <label style="color:var(--text);font-size:0.88rem;display:block;margin-bottom:6px;">Email client <span style="color:#555;font-size:0.8rem;">(pentru confirmare)</span></label>
+              <input type="email" id="p-email" class="search-box" style="width:100%;" placeholder="email@exemplu.ro" />
+            </div>
             <button class="btn btn-gold" style="width:100%;margin-top:18px;" onclick="adaugaProgramare()">Salvează programarea</button>
             <div id="p-alert" style="margin-top:12px;display:none;padding:10px;border-radius:8px;font-size:0.85rem;"></div>
           </div>
@@ -443,6 +447,7 @@
   </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
 import { getFirestore, collection, getDocs, doc, updateDoc, deleteDoc, onSnapshot, query, orderBy, addDoc } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
@@ -458,6 +463,26 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db  = getFirestore(app);
+
+// ===== EMAILJS =====
+emailjs.init('8Rh0YRaFzOh5v7eI3');
+
+async function trimiteConfirmareProgramare(nume, email, data, ora, serviciu, nota) {
+  if (!email) { alert('Clientul nu are email salvat.'); return; }
+  try {
+    await emailjs.send('service_pxk9y2i', 'template_rqqv8bc', {
+      client_nume:  nume,
+      client_email: email,
+      subiect:      serviciu,
+      mesaj:        `Data: ${data}\nOra: ${ora}\nServiciu: ${serviciu}${nota ? '\nAdresă/Notă: ' + nota : ''}`,
+      data:         new Date().toLocaleString('ro-RO')
+    });
+    alert('✅ Email de confirmare trimis la ' + email);
+  } catch(e) {
+    alert('Eroare trimitere email: ' + e.text);
+  }
+}
+window.trimiteConfirmareProgramare = trimiteConfirmareProgramare;
 
 const ADMIN_EMAILS = ['petrunicuta8@gmail.com', 'barberelitero@gmail.com'];
 let mesajeCache = [];
@@ -666,6 +691,7 @@ async function adaugaProgramare() {
   const ora      = document.getElementById('p-ora').value;
   const serviciu = document.getElementById('p-serviciu').value;
   const nota     = document.getElementById('p-nota').value.trim();
+  const email    = document.getElementById('p-email').value.trim();
   const alertEl  = document.getElementById('p-alert');
 
   alertEl.style.display = 'none';
@@ -680,7 +706,7 @@ async function adaugaProgramare() {
 
   try {
     await addDoc(collection(db, 'programari'), {
-      nume, telefon, serviciu, nota,
+      nume, telefon, serviciu, nota, email,
       data, ora,
       dataOra: dataOra.toISOString(),
       status: 'confirmat',
@@ -695,6 +721,7 @@ async function adaugaProgramare() {
     document.getElementById('p-data').value = '';
     document.getElementById('p-ora').value = '';
     document.getElementById('p-nota').value = '';
+    document.getElementById('p-email').value = '';
 
     setTimeout(() => alertEl.style.display = 'none', 3000);
   } catch(e) {
@@ -759,7 +786,10 @@ function renderProgramari(tip) {
               ${p.nota ? ' &nbsp;📝 ' + p.nota : ''}
             </div>
           </div>
-          <button class="btn-icon" onclick="stergeProgramare('${p.id}')" title="Șterge" style="flex-shrink:0;">🗑</button>
+          <div style="display:flex;gap:6px;flex-shrink:0;">
+            ${p.email ? `<button class="btn-icon" onclick="trimiteConfirmareProgramare('${p.nume}','${p.email}','${p.data}','${p.ora}','${p.serviciu}','${p.nota||''}')" title="Trimite confirmare email" style="border-color:#5cb85c;color:#5cb85c;">📧</button>` : ''}
+            <button class="btn-icon" onclick="stergeProgramare('${p.id}')" title="Șterge">🗑</button>
+          </div>
         </div>
       `).join('')}
     </div>
