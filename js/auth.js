@@ -169,35 +169,47 @@ async function updateNavbar() {
 }
 
 // ===== HAMBURGER MOBIL =====
-async function openMobileMenu() {
+function openMobileMenu() {
   const old = document.getElementById('mobile-menu');
   if (old) old.remove();
 
-  const session = await waitForAuth();
   const menu = document.createElement('div');
   menu.id = 'mobile-menu';
   menu.style.cssText = `position:fixed;inset:0;background:rgba(0,0,0,0.97);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;`;
 
-  let html = `<span onclick="closeMobileMenu()" style="position:absolute;top:20px;right:24px;font-size:2rem;color:#999;cursor:pointer;">✕</span>`;
-  html += `<a href="index.html" onclick="closeMobileMenu()" style="color:white;font-size:1.3rem;font-weight:600;padding:12px 40px;border-radius:10px;text-decoration:none;width:260px;text-align:center;">Acasă</a>`;
-  html += `<a href="contact.html" onclick="closeMobileMenu()" style="color:white;font-size:1.3rem;font-weight:600;padding:12px 40px;border-radius:10px;text-decoration:none;width:260px;text-align:center;">Contact</a>`;
-  html += `<div style="width:60px;height:1px;background:#2a2a2a;margin:8px 0;"></div>`;
+  // Afișează meniul imediat cu linkurile de bază
+  function buildMenu(session) {
+    let html = `<span onclick="closeMobileMenu()" style="position:absolute;top:20px;right:24px;font-size:2rem;color:#999;cursor:pointer;">✕</span>`;
+    html += `<a href="index.html" onclick="closeMobileMenu()" style="color:white;font-size:1.3rem;font-weight:600;padding:12px 40px;border-radius:10px;text-decoration:none;width:260px;text-align:center;">Acasă</a>`;
+    html += `<a href="contact.html" onclick="closeMobileMenu()" style="color:white;font-size:1.3rem;font-weight:600;padding:12px 40px;border-radius:10px;text-decoration:none;width:260px;text-align:center;">Contact</a>`;
+    html += `<a href="galerie.html" onclick="closeMobileMenu()" style="color:white;font-size:1.3rem;font-weight:600;padding:12px 40px;border-radius:10px;text-decoration:none;width:260px;text-align:center;">Galerie</a>`;
+    html += `<div style="width:60px;height:1px;background:#2a2a2a;margin:8px 0;"></div>`;
 
-  if (session) {
-    html += `<div style="color:#d32f2f;font-size:1rem;margin-bottom:5px;">✂ Bun venit, ${session.nume.split(' ')[0]}!</div>`;
-    if (ADMIN_EMAILS.includes(session.email)) {
-      html += `<a href="admin.html" onclick="closeMobileMenu()" style="background:linear-gradient(135deg,#d32f2f,#ff6659);color:white;font-size:1rem;font-weight:700;padding:13px 40px;border-radius:10px;text-decoration:none;width:260px;text-align:center;">🛡 Panou Admin</a>`;
+    if (session) {
+      html += `<div style="color:#d32f2f;font-size:1rem;margin-bottom:5px;">✂ Bun venit, ${session.nume.split(' ')[0]}!</div>`;
+      if (ADMIN_EMAILS.includes(session.email)) {
+        html += `<a href="admin.html" onclick="closeMobileMenu()" style="background:linear-gradient(135deg,#d32f2f,#ff6659);color:white;font-size:1rem;font-weight:700;padding:13px 40px;border-radius:10px;text-decoration:none;width:260px;text-align:center;">🛡 Panou Admin</a>`;
+      }
+      html += `<a href="cont.html" onclick="closeMobileMenu()" style="border:2px solid #d32f2f;color:#d32f2f;font-size:1rem;font-weight:600;padding:12px 40px;border-radius:10px;text-decoration:none;width:260px;text-align:center;">Contul meu</a>`;
+      html += `<button onclick="closeMobileMenu();logout()" style="background:#e05c5c;color:white;font-size:1rem;font-weight:600;padding:13px 40px;border-radius:10px;border:none;cursor:pointer;width:260px;">Deconectare</button>`;
+    } else {
+      html += `<a href="login.html" onclick="closeMobileMenu()" style="border:2px solid #d32f2f;color:#d32f2f;font-size:1rem;font-weight:600;padding:12px 40px;border-radius:10px;text-decoration:none;width:260px;text-align:center;">Conectare</a>`;
+      html += `<a href="register.html" onclick="closeMobileMenu()" style="background:linear-gradient(135deg,#d32f2f,#ff6659);color:white;font-size:1rem;font-weight:700;padding:13px 40px;border-radius:10px;text-decoration:none;width:260px;text-align:center;">Înregistrare</a>`;
     }
-    html += `<a href="cont.html" onclick="closeMobileMenu()" style="border:2px solid #d32f2f;color:#d32f2f;font-size:1rem;font-weight:600;padding:12px 40px;border-radius:10px;text-decoration:none;width:260px;text-align:center;">Contul meu</a>`;
-    html += `<button onclick="closeMobileMenu();logout()" style="background:#e05c5c;color:white;font-size:1rem;font-weight:600;padding:13px 40px;border-radius:10px;border:none;cursor:pointer;width:260px;">Deconectare</button>`;
-  } else {
-    html += `<a href="login.html" onclick="closeMobileMenu()" style="border:2px solid #d32f2f;color:#d32f2f;font-size:1rem;font-weight:600;padding:12px 40px;border-radius:10px;text-decoration:none;width:260px;text-align:center;">Conectare</a>`;
-    html += `<a href="register.html" onclick="closeMobileMenu()" style="background:linear-gradient(135deg,#d32f2f,#ff6659);color:white;font-size:1rem;font-weight:700;padding:13px 40px;border-radius:10px;text-decoration:none;width:260px;text-align:center;">Înregistrare</a>`;
+    menu.innerHTML = html;
   }
 
-  menu.innerHTML = html;
+  // Afișează imediat cu sesiunea din cache (poate fi null la început)
+  buildMenu(auth.currentUser ? getSession() : null);
   document.body.appendChild(menu);
   document.body.style.overflow = 'hidden';
+
+  // Actualizează după ce Firebase confirmă sesiunea
+  waitForAuth().then(session => {
+    if (document.getElementById('mobile-menu')) {
+      buildMenu(session);
+    }
+  });
 }
 
 function closeMobileMenu() {
