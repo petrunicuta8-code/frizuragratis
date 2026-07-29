@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ro">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Conectare – BarberElite</title>
+  <title>Conectare – NADO dnzz</title>
   <link rel="stylesheet" href="css/style.css"/>
   <style>
     /* ===== CONTURI SALVATE ===== */
@@ -119,7 +119,7 @@
 <nav>
   <div class="nav-logo">
     <span class="scissors">✂</span>
-    <span>Barber<em>Elite</em></span>
+    <span>NADO <em>dnzz</em></span>
   </div>
   <ul class="nav-links">
     <li><a href="index.html">Acasă</a></li>
@@ -138,18 +138,11 @@
     <div class="form-card-header">
       <div class="form-icon">🔐</div>
       <h2>Conectare</h2>
-      <p>Bun venit înapoi la BarberElite</p>
+      <p>Bun venit înapoi la NADO dnzz</p>
     </div>
 
     <div class="alert alert-error"   id="alert-error"></div>
     <div class="alert alert-success" id="alert-success"></div>
-
-    <!-- CONTURI SALVATE (apare doar dacă există) -->
-    <div id="saved-accounts-section" style="display:none;">
-      <div class="saved-accounts-label">Conturile tale</div>
-      <div id="saved-accounts-list"></div>
-      <div class="form-divider">sau intră cu alt cont</div>
-    </div>
 
     <!-- FORMULAR -->
     <form id="login-form">
@@ -177,105 +170,40 @@
   </div>
 </div>
 
-<script src="js/auth.js"></script>
-<script>
-  // Dacă e deja logat, redirecționează
-  if (getSession()) window.location.href = 'cont.html';
+<script type="module" src="js/auth.js"></script>
+<script type="module">
+  import { login, waitForAuth } from './js/auth.js';
 
-  const SAVED_KEY = 'barberelite_saved_accounts';
+  // Dacă e deja logat, trimite direct la cont
+  waitForAuth().then(session => {
+    if (session) window.location.href = 'cont.html';
+  });
 
-  // Citire/scriere conturi salvate
-  function getSavedAccounts() {
-    return JSON.parse(localStorage.getItem(SAVED_KEY) || '[]');
-  }
-
-  function saveSavedAccounts(list) {
-    localStorage.setItem(SAVED_KEY, JSON.stringify(list));
-  }
-
-  function addSavedAccount(user) {
-    let list = getSavedAccounts();
-    // Evită duplicate după email
-    list = list.filter(a => a.email !== user.email);
-    // Adaugă la început
-    list.unshift({ nume: user.nume, email: user.email });
-    // Păstrează max 5 conturi
-    list = list.slice(0, 5);
-    saveSavedAccounts(list);
-  }
-
-  function removeSavedAccount(email) {
-    const list = getSavedAccounts().filter(a => a.email !== email);
-    saveSavedAccounts(list);
-    renderSavedAccounts();
-  }
-
-  // Generare inițiale pentru avatar
-  function getInitials(nume) {
-    return nume.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
-  }
-
-  // Randare conturi salvate
-  function renderSavedAccounts() {
-    const list = getSavedAccounts();
-    const section = document.getElementById('saved-accounts-section');
-    const container = document.getElementById('saved-accounts-list');
-
-    if (!list.length) {
-      section.style.display = 'none';
-      return;
-    }
-
-    section.style.display = 'block';
-    container.innerHTML = list.map(acc => `
-      <div class="saved-account-item" onclick="selectAccount('${acc.email}')">
-        <div class="saved-account-avatar">${getInitials(acc.nume)}</div>
-        <div class="saved-account-info">
-          <div class="saved-account-name">${acc.nume}</div>
-          <div class="saved-account-email">${acc.email}</div>
-        </div>
-        <div class="saved-account-arrow">→</div>
-        <button class="saved-account-remove" onclick="event.stopPropagation(); removeSavedAccount('${acc.email}')" title="Șterge din listă">✕</button>
-      </div>
-    `).join('');
-  }
-
-  // Click pe un cont salvat → completează emailul și focus pe parolă
-  function selectAccount(email) {
-    document.getElementById('email').value = email;
-    document.getElementById('parola').value = '';
-    document.getElementById('parola').focus();
-    // Scroll la formular
-    document.getElementById('login-form').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-  }
-
-  // Submit login
-  document.getElementById('login-form').addEventListener('submit', function(e) {
+  document.getElementById('login-form').addEventListener('submit', async function(e) {
     e.preventDefault();
     const email  = document.getElementById('email').value.trim();
     const parola = document.getElementById('parola').value;
-
-    const errEl = document.getElementById('alert-error');
-    const sucEl = document.getElementById('alert-success');
+    const errEl  = document.getElementById('alert-error');
+    const sucEl  = document.getElementById('alert-success');
+    const btn    = this.querySelector('button[type="submit"]');
     errEl.classList.remove('show');
     sucEl.classList.remove('show');
 
-    const result = login(email, parola);
+    btn.textContent = 'Se verifică...';
+    btn.disabled = true;
+
+    const result = await login(email, parola);
     if (!result.success) {
       errEl.textContent = result.message;
       errEl.classList.add('show');
+      btn.textContent = 'Conectare';
+      btn.disabled = false;
     } else {
-      // Salvează contul în lista de conturi cunoscute
-      addSavedAccount(result.user);
-
-      sucEl.textContent = 'Conectare reușită! Se încarcă contul tău...';
+      sucEl.textContent = 'Conectare reușită! Te redirecționez...';
       sucEl.classList.add('show');
-      setTimeout(() => window.location.href = 'cont.html', 1500);
+      setTimeout(() => window.location.href = 'cont.html', 1000);
     }
   });
-
-  // Inițializare la încărcarea paginii
-  renderSavedAccounts();
 </script>
 </body>
 </html>

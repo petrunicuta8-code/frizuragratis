@@ -1,85 +1,164 @@
-// ===== AUTH.JS - Gestionare conturi cu localStorage =====
+// ===== AUTH.JS - Firebase Authentication cu persistență permanentă =====
 
-const USERS_KEY = 'frizerie_users';
-const SESSION_KEY = 'frizerie_session';
+import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
+import {
+  getAuth,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  signOut,
+  onAuthStateChanged,
+  browserLocalPersistence,
+  setPersistence,
+  sendPasswordResetEmail,
+  updateProfile
+} from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
+import {
+  getFirestore,
+  collection,
+  getDocs,
+  addDoc,
+  doc,
+  setDoc,
+  getDoc,
+  query,
+  where
+} from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
 
-// --- Utilitar: citire/scriere utilizatori ---
-function getUsers() {
-  return JSON.parse(localStorage.getItem(USERS_KEY) || '[]');
-}
+const firebaseConfig = {
+  apiKey: "AIzaSyBwHvp9_-sCInstS5IwG2MB91Jnrw151rs",
+  authDomain: "barberelite-508f3.firebaseapp.com",
+  projectId: "barberelite-508f3",
+  storageBucket: "barberelite-508f3.firebasestorage.app",
+  messagingSenderId: "462591045276",
+  appId: "1:462591045276:web:f2e4379cca83aa95210759"
+};
 
-function saveUsers(users) {
-  localStorage.setItem(USERS_KEY, JSON.stringify(users));
-}
+const app  = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db   = getFirestore(app);
 
-function getSession() {
-  return JSON.parse(localStorage.getItem(SESSION_KEY) || 'null');
-}
+// ===== PERSISTENȚĂ PERMANENTĂ =====
+// Utilizatorul rămâne logat mereu, chiar și după închiderea browserului
+setPersistence(auth, browserLocalPersistence);
 
-function setSession(user) {
-  localStorage.setItem(SESSION_KEY, JSON.stringify(user));
-}
+const ADMIN_EMAILS = [
+  'petrunicuta8@gmail.com',
+  'barberelitero@gmail.com'
+];
 
-function clearSession() {
-  localStorage.removeItem(SESSION_KEY);
-}
+// ===== ÎNREGISTRARE =====
+async function register(nume, email, telefon, parola) {
+  try {
+    // Creează contul în Firebase Auth
+    const userCredential = await createUserWithEmailAndPassword(auth, email, parola);
+    const user = userCredential.user;
 
-// --- Înregistrare ---
-function register(nume, email, telefon, parola) {
-  const users = getUsers();
-  if (users.find(u => u.email === email)) {
-    return { success: false, message: 'Acest email este deja înregistrat.' };
+    // Setează numele în profilul Firebase Auth
+    await updateProfile(user, { displayName: nume });
+
+    // Salvează datele extra (nume, telefon) în Firestore
+    await setDoc(doc(db, 'utilizatori', user.uid), {
+      uid: user.uid,
+      nume,
+      email,
+      telefon,
+      creatLa: new Date().toISOString()
+    });
+
+    return { success: true, message: 'Cont creat cu succes!' };
+  } catch (e) {
+    let msg = 'Eroare la înregistrare.';
+    if (e.code === 'auth/email-already-in-use') msg = 'Acest email este deja înregistrat.';
+    else if (e.code === 'auth/weak-password')   msg = 'Parola trebuie să aibă minim 6 caractere.';
+    else if (e.code === 'auth/invalid-email')   msg = 'Adresă de email invalidă.';
+    return { success: false, message: msg };
   }
-  const user = { id: Date.now(), nume, email, telefon, parola };
-  users.push(user);
-  saveUsers(users);
-  return { success: true, message: 'Cont creat cu succes!' };
 }
 
-// --- Login ---
-function login(email, parola) {
-  const users = getUsers();
-  const user = users.find(u => u.email === email && u.parola === parola);
-  if (!user) {
-    return { success: false, message: 'Email sau parolă incorectă.' };
+// ===== LOGIN =====
+async function login(email, parola) {
+  try {
+    const userCredential = await signInWithEmailAndPassword(auth, email, parola);
+    const user = userCredential.user;
+
+    // Ia datele extra din Firestore
+    const snap = await getDoc(doc(db, 'utilizatori', user.uid));
+    const extra = snap.exists() ? snap.data() : {};
+
+    const userData = {
+      uid: user.uid,
+      email: user.email,
+      nume: extra.nume || user.displayName || email.split('@')[0],
+      telefon: extra.telefon || '—'
+    };
+
+    return { success: true, user: userData };
+  } catch (e) {
+    let msg = 'Email sau parolă incorectă.';
+    if (e.code === 'auth/user-not-found')   msg = 'Nu există niciun cont cu acest email.';
+    else if (e.code === 'auth/wrong-password') msg = 'Parolă incorectă.';
+    else if (e.code === 'auth/invalid-email')  msg = 'Adresă de email invalidă.';
+    else if (e.code === 'auth/too-many-requests') msg = 'Prea multe încercări. Încearcă mai târziu.';
+    return { success: false, message: msg };
   }
-  setSession(user);
-  return { success: true, user };
 }
 
-// --- Recuperare parolă ---
-function recoverPassword(email, telefon) {
-  const users = getUsers();
-  const user = users.find(u => u.email === email && u.telefon === telefon);
-  if (!user) {
-    return { success: false, message: 'Nu am găsit niciun cont cu aceste date.' };
+// ===== RECUPERARE PAROLĂ (trimite email de reset) =====
+async function recoverPassword(email) {
+  try {
+    await sendPasswordResetEmail(auth, email);
+    return { success: true };
+  } catch (e) {
+    let msg = 'Nu am găsit niciun cont cu acest email.';
+    if (e.code === 'auth/invalid-email') msg = 'Adresă de email invalidă.';
+    return { success: false, message: msg };
   }
-  return { success: true, parola: user.parola, nume: user.nume };
 }
 
-// --- Logout ---
-function logout() {
-  clearSession();
+// ===== LOGOUT =====
+async function logout() {
+  await signOut(auth);
   window.location.href = 'index.html';
 }
 
-// --- Actualizare navbar în funcție de sesiune ---
-const ADMIN_EMAILS = [
-  'petrunicuta8@gmail.com',  // Lucii
-  'barberelitero@gmail.com'  // Denis
-];
+// ===== GET SESSION (sincrona - din cache Firebase) =====
+function getSession() {
+  const user = auth.currentUser;
+  if (!user) return null;
+  return { uid: user.uid, email: user.email, nume: user.displayName || user.email.split('@')[0], telefon: '—' };
+}
 
-function updateNavbar() {
-  const session = getSession();
+// ===== WAIT FOR AUTH (async - sigur) =====
+function waitForAuth() {
+  return new Promise(resolve => {
+    const unsub = onAuthStateChanged(auth, async (user) => {
+      unsub();
+      if (!user) { resolve(null); return; }
+      const snap = await getDoc(doc(db, 'utilizatori', user.uid));
+      const extra = snap.exists() ? snap.data() : {};
+      resolve({
+        uid: user.uid,
+        email: user.email,
+        nume: extra.nume || user.displayName || user.email.split('@')[0],
+        telefon: extra.telefon || '—'
+      });
+    });
+  });
+}
+
+// ===== NAVBAR =====
+async function updateNavbar() {
   const navAuth = document.getElementById('nav-auth');
   if (!navAuth) return;
+
+  const session = await waitForAuth();
 
   if (session) {
     const isAdmin = ADMIN_EMAILS.includes(session.email);
     navAuth.innerHTML = `
-      ${isAdmin ? '<a href="admin.html" class="btn btn-gold" style="font-size:0.82rem;padding:8px 16px;">🛡 Conectare Admin</a>' : ''}
-      <span id="nav-user-info">✂ Bun venit, ${session.nume.split(' ')[0]}!</span>
-      <button class="btn btn-danger" onclick="logout()" style="padding:8px 18px;font-size:0.85rem;">Deconectare</button>
+      ${isAdmin ? '<a href="admin.html" class="btn btn-gold" style="font-size:0.82rem;padding:8px 16px;">🛡 Admin</a>' : ''}
+      <span style="color:var(--gold);font-weight:600;font-size:0.9rem;">✂ ${session.nume.split(' ')[0]}</span>
+      <button class="btn btn-danger" onclick="logout()" style="padding:8px 18px;font-size:0.85rem;">Ieșire</button>
     `;
   } else {
     navAuth.innerHTML = `
@@ -89,47 +168,31 @@ function updateNavbar() {
   }
 }
 
-// Apelat automat la încărcarea oricărei pagini
-document.addEventListener('DOMContentLoaded', function() {
-  updateNavbar();
-});
-
-// ===== MENIU HAMBURGER MOBIL =====
-function openMobileMenu() {
-  // Șterge meniul vechi dacă există
+// ===== HAMBURGER MOBIL =====
+async function openMobileMenu() {
   const old = document.getElementById('mobile-menu');
   if (old) old.remove();
 
-  const session = getSession();
-  const ADMIN_EMAILS = [
-    'petrunicuta8@gmail.com',
-    'barberelitero@gmail.com'
-  ];
-
+  const session = await waitForAuth();
   const menu = document.createElement('div');
   menu.id = 'mobile-menu';
-  menu.style.cssText = `
-    position: fixed; inset: 0; background: rgba(0,0,0,0.97);
-    z-index: 9999; display: flex; flex-direction: column;
-    align-items: center; justify-content: center; gap: 12px;
-  `;
+  menu.style.cssText = `position:fixed;inset:0;background:rgba(0,0,0,0.97);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;`;
 
-  let html = `<span onclick="closeMobileMenu()" style="position:absolute;top:20px;right:24px;font-size:2rem;color:#999;cursor:pointer;line-height:1;">✕</span>`;
-
+  let html = `<span onclick="closeMobileMenu()" style="position:absolute;top:20px;right:24px;font-size:2rem;color:#999;cursor:pointer;">✕</span>`;
   html += `<a href="index.html" onclick="closeMobileMenu()" style="color:white;font-size:1.3rem;font-weight:600;padding:12px 40px;border-radius:10px;text-decoration:none;width:260px;text-align:center;">Acasă</a>`;
   html += `<a href="contact.html" onclick="closeMobileMenu()" style="color:white;font-size:1.3rem;font-weight:600;padding:12px 40px;border-radius:10px;text-decoration:none;width:260px;text-align:center;">Contact</a>`;
   html += `<div style="width:60px;height:1px;background:#2a2a2a;margin:8px 0;"></div>`;
 
   if (session) {
-    html += `<div style="color:#c9a84c;font-size:1rem;margin-bottom:5px;">✂ Bun venit, ${session.nume.split(' ')[0]}!</div>`;
+    html += `<div style="color:#d32f2f;font-size:1rem;margin-bottom:5px;">✂ Bun venit, ${session.nume.split(' ')[0]}!</div>`;
     if (ADMIN_EMAILS.includes(session.email)) {
-      html += `<a href="admin.html" onclick="closeMobileMenu()" style="background:linear-gradient(135deg,#c9a84c,#e8c96a);color:#0f0f0f;font-size:1rem;font-weight:700;padding:13px 40px;border-radius:10px;text-decoration:none;width:260px;text-align:center;">🛡 Panou Admin</a>`;
+      html += `<a href="admin.html" onclick="closeMobileMenu()" style="background:linear-gradient(135deg,#d32f2f,#ff6659);color:white;font-size:1rem;font-weight:700;padding:13px 40px;border-radius:10px;text-decoration:none;width:260px;text-align:center;">🛡 Panou Admin</a>`;
     }
-    html += `<a href="cont.html" onclick="closeMobileMenu()" style="border:2px solid #c9a84c;color:#c9a84c;font-size:1rem;font-weight:600;padding:12px 40px;border-radius:10px;text-decoration:none;width:260px;text-align:center;">Contul meu</a>`;
+    html += `<a href="cont.html" onclick="closeMobileMenu()" style="border:2px solid #d32f2f;color:#d32f2f;font-size:1rem;font-weight:600;padding:12px 40px;border-radius:10px;text-decoration:none;width:260px;text-align:center;">Contul meu</a>`;
     html += `<button onclick="closeMobileMenu();logout()" style="background:#e05c5c;color:white;font-size:1rem;font-weight:600;padding:13px 40px;border-radius:10px;border:none;cursor:pointer;width:260px;">Deconectare</button>`;
   } else {
-    html += `<a href="login.html" onclick="closeMobileMenu()" style="border:2px solid #c9a84c;color:#c9a84c;font-size:1rem;font-weight:600;padding:12px 40px;border-radius:10px;text-decoration:none;width:260px;text-align:center;">Conectare</a>`;
-    html += `<a href="register.html" onclick="closeMobileMenu()" style="background:linear-gradient(135deg,#c9a84c,#e8c96a);color:#0f0f0f;font-size:1rem;font-weight:700;padding:13px 40px;border-radius:10px;text-decoration:none;width:260px;text-align:center;">Înregistrare</a>`;
+    html += `<a href="login.html" onclick="closeMobileMenu()" style="border:2px solid #d32f2f;color:#d32f2f;font-size:1rem;font-weight:600;padding:12px 40px;border-radius:10px;text-decoration:none;width:260px;text-align:center;">Conectare</a>`;
+    html += `<a href="register.html" onclick="closeMobileMenu()" style="background:linear-gradient(135deg,#d32f2f,#ff6659);color:white;font-size:1rem;font-weight:700;padding:13px 40px;border-radius:10px;text-decoration:none;width:260px;text-align:center;">Înregistrare</a>`;
   }
 
   menu.innerHTML = html;
@@ -142,3 +205,17 @@ function closeMobileMenu() {
   if (menu) menu.remove();
   document.body.style.overflow = '';
 }
+
+document.addEventListener('DOMContentLoaded', updateNavbar);
+
+// ===== EXPORT GLOBAL =====
+window.logout         = logout;
+window.openMobileMenu = openMobileMenu;
+window.closeMobileMenu = closeMobileMenu;
+window.getSession     = getSession;
+window.waitForAuth    = waitForAuth;
+window.register       = register;
+window.login          = login;
+window.recoverPassword = recoverPassword;
+
+export { register, login, logout, recoverPassword, getSession, waitForAuth };

@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ro">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Contul meu – BarberElite</title>
+  <title>Contul meu – NADO dnzz</title>
   <link rel="stylesheet" href="css/style.css"/>
 </head>
 <body>
@@ -12,7 +12,7 @@
 <nav>
   <div class="nav-logo">
     <span class="scissors">✂</span>
-    <span>Barber<em>Elite</em></span>
+    <span>NADO <em>dnzz</em></span>
   </div>
   <ul class="nav-links">
     <li><a href="index.html">Acasă</a></li>
@@ -35,7 +35,7 @@
     <div style="border-top:1px solid #2a2a2a; margin:25px 0; padding-top:25px;">
       <h3 style="color:var(--gold); margin-bottom:15px;">Servicii favorite</h3>
       <p style="color:var(--text-muted); font-size:0.9rem;">
-        Explorează serviciile noastre și programează-te pentru experiența BarberElite.
+        Explorează serviciile noastre și programează-te pentru experiența NADO dnzz.
       </p>
       <a href="index.html#servicii" class="btn btn-outline" style="margin-top:15px;">
         Vezi servicii
@@ -48,18 +48,23 @@
   </div>
 </div>
 
-<script src="js/auth.js"></script>
-<script>
-  const session = getSession();
-  if (!session) {
-    window.location.href = 'login.html';
-  } else {
+<script type="module" src="js/auth.js"></script>
+<script type="module">
+  import { waitForAuth, logout } from './js/auth.js';
+
+  waitForAuth().then(session => {
+    if (!session) {
+      window.location.href = 'login.html';
+      return;
+    }
     document.getElementById('user-name').textContent    = session.nume;
     document.getElementById('user-email').textContent   = session.email;
     document.getElementById('user-telefon').textContent = session.telefon;
     const initials = session.nume.split(' ').map(w => w[0]).join('').toUpperCase().slice(0,2);
     document.getElementById('avatar-initials').textContent = initials;
-  }
+  });
+
+  window.logout = logout;
 </script>
 </body>
 </html>

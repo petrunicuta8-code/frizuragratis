@@ -1,13 +1,15 @@
-/* ===== RESET & BASE ===== */
-* {
+﻿/* ===== RESET & BASE ===== */
+@import url('https://fonts.googleapis.com/css2?family=Abril+Fatface&family=Pacifico&display=swap');
+
+*  {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
 :root {
-  --gold: #c9a84c;
-  --gold-light: #e8c96a;
+  --gold: #d32f2f;
+  --gold-light: #ffffff;
   --dark: #0f0f0f;
   --dark2: #1a1a1a;
   --dark3: #242424;
@@ -77,15 +79,19 @@ nav {
 }
 
 .nav-logo span {
-  font-size: 1.5rem;
-  font-weight: 700;
+  font-family: 'Abril Fatface', serif;
+  font-size: 1.4rem;
+  font-weight: 400;
   color: var(--white);
-  letter-spacing: 1px;
+  letter-spacing: 2px;
 }
 
 .nav-logo span em {
+  font-family: 'Pacifico', cursive;
   color: var(--gold);
   font-style: normal;
+  font-size: 1.4rem;
+  letter-spacing: 1px;
 }
 
 .nav-links {
@@ -135,14 +141,14 @@ nav {
 }
 
 .btn-gold {
-  background: linear-gradient(135deg, var(--gold), var(--gold-light));
-  color: var(--dark);
+  background: linear-gradient(135deg, #d32f2f, #ffffff);
+  color: #0f0f0f;
 }
 
 .btn-gold:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(201,168,76,0.5);
-  color: var(--dark);
+  box-shadow: 0 6px 20px rgba(211,47,47,0.5);
+  color: #0f0f0f;
 }
 
 .btn-outline {
@@ -190,7 +196,6 @@ nav {
   background: url('https://images.unsplash.com/photo-1585747860715-2ba37e788b70?w=1400') center/cover no-repeat;
   opacity: 0.15;
 }
-
 .hero-content {
   position: relative;
   z-index: 1;
@@ -200,7 +205,7 @@ nav {
 
 .hero-badge {
   display: inline-block;
-  background: rgba(201,168,76,0.15);
+  background: rgba(211,47,47,0.15);
   border: 1px solid var(--gold);
   color: var(--gold);
   padding: 6px 18px;
@@ -484,7 +489,7 @@ section {
 .form-group select:focus,
 .form-group textarea:focus {
   border-color: var(--gold);
-  box-shadow: 0 0 0 3px rgba(201,168,76,0.15);
+  box-shadow: 0 0 0 3px rgba(211,47,47,0.15);
 }
 
 .form-group textarea { resize: vertical; min-height: 120px; }
@@ -524,7 +529,7 @@ section {
 
 .alert-error { background: rgba(224,92,92,0.15); border: 1px solid var(--danger); color: var(--danger); }
 .alert-success { background: rgba(92,184,92,0.15); border: 1px solid var(--success); color: var(--success); }
-.alert-info { background: rgba(201,168,76,0.15); border: 1px solid var(--gold); color: var(--gold); }
+.alert-info { background: rgba(211,47,47,0.15); border: 1px solid var(--gold); color: var(--gold); }
 .alert.show { display: block; }
 
 /* ===== CONTACT PAGE ===== */
@@ -560,7 +565,7 @@ section {
   flex-shrink: 0;
   width: 45px;
   height: 45px;
-  background: rgba(201,168,76,0.1);
+  background: rgba(211,47,47,0.1);
   border-radius: 50%;
   display: flex;
   align-items: center;

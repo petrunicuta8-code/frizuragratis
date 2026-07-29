@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ro">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Înregistrare – BarberElite</title>
+  <title>Înregistrare – NADO dnzz</title>
   <link rel="stylesheet" href="css/style.css"/>
 </head>
 <body>
@@ -12,7 +12,7 @@
 <nav>
   <div class="nav-logo">
     <span class="scissors">✂</span>
-    <span>Barber<em>Elite</em></span>
+    <span>NADO <em>dnzz</em></span>
   </div>
   <ul class="nav-links">
     <li><a href="index.html">Acasă</a></li>
@@ -29,7 +29,7 @@
     <div class="form-card-header">
       <div class="form-icon">✂</div>
       <h2>Creează cont</h2>
-      <p>Alătură-te comunității BarberElite</p>
+      <p>Alătură-te comunității NADO dnzz</p>
     </div>
 
     <div class="alert alert-error" id="alert-error"></div>
@@ -66,18 +66,20 @@
   </div>
 </div>
 
-<script src="js/auth.js"></script>
-<script>
-  document.getElementById('register-form').addEventListener('submit', function(e) {
+<script type="module" src="js/auth.js"></script>
+<script type="module">
+  import { register, login } from './js/auth.js';
+
+  document.getElementById('register-form').addEventListener('submit', async function(e) {
     e.preventDefault();
     const nume    = document.getElementById('nume').value.trim();
     const email   = document.getElementById('email').value.trim();
     const telefon = document.getElementById('telefon').value.trim();
     const parola  = document.getElementById('parola').value;
     const parola2 = document.getElementById('parola2').value;
-
-    const errEl = document.getElementById('alert-error');
-    const sucEl = document.getElementById('alert-success');
+    const errEl   = document.getElementById('alert-error');
+    const sucEl   = document.getElementById('alert-success');
+    const btn     = this.querySelector('button[type="submit"]');
     errEl.classList.remove('show');
     sucEl.classList.remove('show');
 
@@ -87,15 +89,20 @@
       return;
     }
 
-    const result = register(nume, email, telefon, parola);
+    btn.textContent = 'Se creează contul...';
+    btn.disabled = true;
+
+    const result = await register(nume, email, telefon, parola);
     if (!result.success) {
       errEl.textContent = result.message;
       errEl.classList.add('show');
+      btn.textContent = 'Creează contul';
+      btn.disabled = false;
     } else {
-      sucEl.textContent = result.message + ' Vei fi redirecționat...';
+      // Loghează automat după înregistrare
+      sucEl.textContent = 'Cont creat! Te conectez automat...';
       sucEl.classList.add('show');
-      this.reset();
-      setTimeout(() => window.location.href = 'login.html', 2000);
+      setTimeout(() => window.location.href = 'cont.html', 1200);
     }
   });
 </script>
