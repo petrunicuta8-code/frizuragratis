@@ -1,0 +1,26 @@
+{
+  "name": "NADO dnzz – Frizer la Domiciliu",
+  "short_name": "NADO dnzz",
+  "description": "Frizer profesionist la domiciliu. Programează-te rapid și ușor.",
+  "start_url": "/index.html",
+  "display": "standalone",
+  "background_color": "#0f0f0f",
+  "theme_color": "#d32f2f",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["lifestyle", "beauty"],
+  "lang": "ro"
+}

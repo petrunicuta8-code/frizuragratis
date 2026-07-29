@@ -21,6 +21,12 @@
   <meta name="twitter:description" content="Frizer profesionist la domiciliu. Vin eu la tine sau vii tu la mine."/>
   <link rel="stylesheet" href="css/style.css"/>
   <link rel="stylesheet" href="css/animations.css"/>
+  <link rel="manifest" href="/manifest.json"/>
+  <meta name="theme-color" content="#d32f2f"/>
+  <meta name="mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-title" content="NADO dnzz"/>
+  <link rel="apple-touch-icon" href="/icons/icon-192.png"/>
 </head>
 <body class="page-enter">
 
@@ -171,18 +177,25 @@
 
   // ===== BUTON ADMIN - vizibil doar pentru emailurile de mai jos =====
   const ADMIN_EMAILS = [
-    'petrunicuta8@gmail.com',  // lucii
-    'aici pui email'           // Denis
+    'petrunicuta8@gmail.com',
+    'barberelitero@gmail.com'
   ];
 
-  const session = getSession();
+  const session = typeof getSession === 'function' ? getSession() : null;
   if (session && ADMIN_EMAILS.includes(session.email)) {
     const adminBtn = document.createElement('a');
     adminBtn.href = 'admin.html';
     adminBtn.className = 'btn btn-gold';
-    adminBtn.style.cssText = 'font-size:0.82rem; padding:8px 16px; background:linear-gradient(135deg,#c9a84c,#e8c96a);';
+    adminBtn.style.cssText = 'font-size:0.82rem; padding:8px 16px;';
     adminBtn.textContent = '🛡 Conectare Admin';
     document.getElementById('nav-auth').prepend(adminBtn);
+  }
+
+  // ===== PWA Service Worker =====
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/sw.js').catch(() => {});
+    });
   }
 </script>
 </html>
