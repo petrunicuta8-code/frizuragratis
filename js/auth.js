@@ -173,46 +173,119 @@ function openMobileMenu() {
   const old = document.getElementById('mobile-menu');
   if (old) old.remove();
 
-  const menu = document.createElement('div');
-  menu.id = 'mobile-menu';
-  menu.style.cssText = [
-    'position:fixed',
-    'top:0','left:0','right:0','bottom:0',
-    'width:100%','height:100%',
-    'background:#0f0f0f',
-    'z-index:999999',
-    'display:flex',
-    'flex-direction:column',
-    'align-items:center',
-    'justify-content:center',
-    'gap:16px',
-    'padding:20px',
-    'box-sizing:border-box',
-    'overflow-y:auto'
-  ].join(';');
+  const overlay = document.createElement('div');
+  overlay.id = 'mobile-menu';
+  Object.assign(overlay.style, {
+    position: 'fixed',
+    top: '0',
+    left: '0',
+    width: '100vw',
+    height: '100vh',
+    background: '#0f0f0f',
+    zIndex: '999999',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '14px',
+    boxSizing: 'border-box'
+  });
+
+  const closeBtn = document.createElement('button');
+  closeBtn.textContent = '✕';
+  Object.assign(closeBtn.style, {
+    position: 'absolute', top: '20px', right: '24px',
+    background: 'none', border: 'none', color: '#ffffff',
+    fontSize: '2rem', cursor: 'pointer', lineHeight: '1', zIndex: '1'
+  });
+  closeBtn.onclick = closeMobileMenu;
+  overlay.appendChild(closeBtn);
+
+  const links = [
+    { text: 'Acasă', href: 'index.html' },
+    { text: 'Contact', href: 'contact.html' },
+    { text: 'Galerie', href: 'galerie.html' },
+  ];
+
+  links.forEach(l => {
+    const a = document.createElement('a');
+    a.href = l.href;
+    a.textContent = l.text;
+    Object.assign(a.style, {
+      display: 'block', color: '#ffffff', fontSize: '1.4rem',
+      fontWeight: '700', padding: '12px 0', textDecoration: 'none',
+      width: '260px', textAlign: 'center'
+    });
+    overlay.appendChild(a);
+  });
+
+  const line = document.createElement('div');
+  Object.assign(line.style, {
+    width: '80px', height: '2px', background: '#d32f2f',
+    borderRadius: '2px', margin: '6px 0'
+  });
+  overlay.appendChild(line);
 
   const user = auth.currentUser;
-
-  let html = '';
-  html += `<button onclick="closeMobileMenu()" style="position:absolute;top:20px;right:24px;background:none;border:none;font-size:2.5rem;color:#999;cursor:pointer;line-height:1;">✕</button>`;
-  html += `<a href="index.html" style="display:block;color:#ffffff;font-size:1.4rem;font-weight:700;padding:14px 0;text-decoration:none;width:260px;text-align:center;">Acasă</a>`;
-  html += `<a href="contact.html" style="display:block;color:#ffffff;font-size:1.4rem;font-weight:700;padding:14px 0;text-decoration:none;width:260px;text-align:center;">Contact</a>`;
-  html += `<a href="galerie.html" style="display:block;color:#ffffff;font-size:1.4rem;font-weight:700;padding:14px 0;text-decoration:none;width:260px;text-align:center;">Galerie</a>`;
-  html += `<div style="width:80px;height:2px;background:#d32f2f;margin:8px 0;border-radius:2px;"></div>`;
-
   if (user) {
     if (ADMIN_EMAILS.includes(user.email)) {
-      html += `<a href="admin.html" style="display:block;background:#d32f2f;color:#ffffff;font-size:1rem;font-weight:700;padding:14px 0;text-decoration:none;width:260px;text-align:center;border-radius:10px;">🛡 Panou Admin</a>`;
+      const adminA = document.createElement('a');
+      adminA.href = 'admin.html';
+      adminA.textContent = '🛡 Panou Admin';
+      Object.assign(adminA.style, {
+        display: 'block', background: '#d32f2f', color: '#ffffff',
+        fontSize: '1rem', fontWeight: '700', padding: '13px 0',
+        textDecoration: 'none', width: '260px', textAlign: 'center',
+        borderRadius: '10px'
+      });
+      overlay.appendChild(adminA);
     }
-    html += `<a href="cont.html" style="display:block;border:2px solid #d32f2f;color:#d32f2f;font-size:1rem;font-weight:600;padding:13px 0;text-decoration:none;width:260px;text-align:center;border-radius:10px;">Contul meu</a>`;
-    html += `<button onclick="logout()" style="display:block;background:#e05c5c;color:white;font-size:1rem;font-weight:600;padding:14px 0;width:260px;text-align:center;border-radius:10px;border:none;cursor:pointer;">Deconectare</button>`;
+    const contA = document.createElement('a');
+    contA.href = 'cont.html';
+    contA.textContent = 'Contul meu';
+    Object.assign(contA.style, {
+      display: 'block', border: '2px solid #d32f2f', color: '#d32f2f',
+      fontSize: '1rem', fontWeight: '600', padding: '12px 0',
+      textDecoration: 'none', width: '260px', textAlign: 'center',
+      borderRadius: '10px', boxSizing: 'border-box'
+    });
+    overlay.appendChild(contA);
+
+    const logoutBtn = document.createElement('button');
+    logoutBtn.textContent = 'Deconectare';
+    Object.assign(logoutBtn.style, {
+      display: 'block', background: '#e05c5c', color: 'white',
+      fontSize: '1rem', fontWeight: '600', padding: '13px 0',
+      width: '260px', textAlign: 'center', borderRadius: '10px',
+      border: 'none', cursor: 'pointer'
+    });
+    logoutBtn.onclick = logout;
+    overlay.appendChild(logoutBtn);
   } else {
-    html += `<a href="login.html" style="display:block;border:2px solid #d32f2f;color:#d32f2f;font-size:1.1rem;font-weight:600;padding:14px 0;text-decoration:none;width:260px;text-align:center;border-radius:10px;">Conectare</a>`;
-    html += `<a href="register.html" style="display:block;background:#d32f2f;color:#ffffff;font-size:1.1rem;font-weight:700;padding:14px 0;text-decoration:none;width:260px;text-align:center;border-radius:10px;">Înregistrare</a>`;
+    const loginA = document.createElement('a');
+    loginA.href = 'login.html';
+    loginA.textContent = 'Conectare';
+    Object.assign(loginA.style, {
+      display: 'block', border: '2px solid #d32f2f', color: '#d32f2f',
+      fontSize: '1.1rem', fontWeight: '600', padding: '13px 0',
+      textDecoration: 'none', width: '260px', textAlign: 'center',
+      borderRadius: '10px', boxSizing: 'border-box'
+    });
+    overlay.appendChild(loginA);
+
+    const regA = document.createElement('a');
+    regA.href = 'register.html';
+    regA.textContent = 'Înregistrare';
+    Object.assign(regA.style, {
+      display: 'block', background: '#d32f2f', color: '#ffffff',
+      fontSize: '1.1rem', fontWeight: '700', padding: '13px 0',
+      textDecoration: 'none', width: '260px', textAlign: 'center',
+      borderRadius: '10px'
+    });
+    overlay.appendChild(regA);
   }
 
-  menu.innerHTML = html;
-  document.body.appendChild(menu);
+  document.body.appendChild(overlay);
   document.body.style.overflow = 'hidden';
 }
 
